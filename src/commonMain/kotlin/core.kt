@@ -20,7 +20,27 @@ data class NotationSettings(
      * Used for line breaking for error reporting. Not used for parsing.
      */
     val lineBreak: String = "\n"
-)
+) {
+    init {
+        if (nodeBreakSymbol == wordBreakSymbol || nodeBreakSymbol == edgeSymbol) {
+            throw IllegalArgumentException("nodeBreakSymbol must be distict from other symbols")
+        }
+    }
+
+    fun format(tree: Tree) = Printer(this).printToString(tree)
+
+    companion object {
+        /** One-space to indent and to separate words */
+        val Spaces = NotationSettings(wordBreakSymbol = " ", edgeSymbol = " ")
+        /** Tab to indent and space to separate words */
+        val SpaceCells = NotationSettings(wordBreakSymbol = " ")
+        /**
+         * Tab to indent and tab to separate words.
+         * Somewhat compatible with TSV files.
+         */
+        val Tabs = NotationSettings()
+    }
+}
 
 /**
  * A tree, as described by Tree Notation.
@@ -31,6 +51,7 @@ sealed class Tree {
     abstract val astNode: AST?
     abstract val indent: Int
     abstract val warnings: List<Warning>
+    abstract val depth: Int
 
     protected fun childrenToString(): String {
         if (children.isEmpty()) return "[]"
@@ -45,6 +66,14 @@ sealed class Tree {
         return warnings + children.flatMap { it.allWarnings() }
     }
 
+    fun ancestors() = sequence<Tree> {
+        var node = this@Tree
+        while (node.parent != null) {
+            yield(node.parent!!)
+            node = node.parent!!
+        }
+    }
+
     /**
      * A tree Root never has a parent, and is un-indented.
      */
@@ -54,6 +83,7 @@ sealed class Tree {
     ) : Tree() {
         override val parent: Tree? = null
         override val indent = -1
+        override val depth = -1
         override val warnings = mutableListOf<Warning>()
         override fun toString(): String {
             return "Tree.Root(indent=$indent, children=${childrenToString()}"
@@ -61,16 +91,23 @@ sealed class Tree {
     }
 
     sealed class Node : Tree() {
+        abstract override var parent: Tree?
+        abstract override val astNode: AST.TreeNode?
         abstract val cells: List<String>
         override val children = mutableListOf<Node>()
         override val warnings = mutableListOf<Warning>()
+        override val depth: Int
+            get() = parent.let { when(it) {
+                null -> 0
+                else -> 1 + it.depth
+            }}
 
         /**
          * A tree node with no words.
          * This is typically an empty line.
          */
         data class Empty(
-            override val parent: Tree?,
+            override var parent: Tree?,
             override val astNode: AST.TreeNode?,
             override val indent: Int,
         ) : Node() {
@@ -85,7 +122,7 @@ sealed class Tree {
          * Possibly the result of over-indenting a child.
          */
         data class Blank(
-            override val parent: Tree?,
+            override var parent: Tree?,
             override val astNode: AST.TreeNode?,
             override val indent: Int,
             override val cells: List<String>
@@ -99,7 +136,7 @@ sealed class Tree {
          * A tree node with words in it.
          */
         data class Typed(
-            override val parent: Tree?,
+            override var parent: Tree?,
             override val astNode: AST.TreeNode?,
             override val indent: Int,
             val type: String,

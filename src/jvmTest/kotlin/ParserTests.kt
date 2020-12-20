@@ -1,7 +1,6 @@
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.expect
 
 val example = """
     project Tree parser in Kotlin
@@ -14,12 +13,7 @@ val example = """
     
 """.trimIndent()
 
-val useSpaces =  NotationSettings(
-    wordBreakSymbol = " ",
-    edgeSymbol = " ",
-    lineBreak = "\n",
-    nodeBreakSymbol = "\n"
-)
+val useSpaces = NotationSettings.Spaces
 
 fun treeToString(tree: Tree) = Printer(useSpaces).printToString(tree)
 fun parsedExample() = Parser(useSpaces).parse(example)
@@ -184,28 +178,31 @@ class ParserTests {
             package 
               id com.example.bad
               version 2.0
-            package
-             id com.example.good
-             version 2.0
         """.trimIndent()
-        val tree = Parser(useSpaces).parse(text)
-        val badNodeParent = tree.children[0]
-        val badNode = badNodeParent.children[0]
-
-        fun assertHasWarning(warnings: List<Warning>) {
-            assertEquals(1, warnings.size, "has warnings")
-            val warning = warnings.first()
-            assertTrue { warning is Warning.ChildNodeOverIndented }
+        fun assertHasOverindentedWarning(node: Tree.Node, parent: Tree, msg: String) {
+            assertEquals(node.warnings.size, 1, "$msg: has one warning")
+            val warning = node.warnings.first()
+            assertTrue("$msg: Is overindent warning") { warning is Warning.ChildNodeOverIndented }
             if (warning is Warning.ChildNodeOverIndented) {
-                assertEquals(2, warning.indent)
-                assertEquals(0, warning.parentIndent)
-                assertEquals(warning.node, badNode)
-                assertEquals(warning.parent, badNodeParent)
+                assertEquals(2, warning.indent, msg)
+                assertEquals(0, warning.parentIndent, msg)
+                assertEquals(warning.node, node, msg)
+                assertEquals(warning.parent, parent, msg)
             }
         }
 
-        assertHasWarning(badNode.warnings)
-        assertHasWarning(tree.allWarnings())
+        val tree = Parser(useSpaces).parse(text)
+        val packageNode = tree.children[0]
+
+        val warnings = mutableListOf<Warning>()
+        assertEquals(packageNode.children.size, 2)
+        packageNode.children.forEachIndexed { index, node ->
+            val warning = node.warnings.first()
+            warnings.add(warning)
+            assertHasOverindentedWarning(node, packageNode, "packageNode.children[$index]")
+        }
+
+        assertEquals(warnings, tree.allWarnings())
     }
 
     @Test
@@ -214,5 +211,24 @@ class ParserTests {
         val printer = Printer(useSpaces)
         val str = printer.printToString(tree)
         assertEquals(example, str)
+    }
+
+    @Test
+    fun testOverindentedSiblingsParentedToSameNode() {
+        val text = """
+            package
+              id com.example.bad
+              version 2.0
+        """.trimIndent()
+        val tree = Parser(useSpaces).parse(text)
+        val expected = TreeBuilder.build {
+            node("package") {
+                node("", "id", "com.example.bad")
+                node("", "version", "2.0")
+            }
+        }
+        print(treeToString(tree))
+        print(treeToString(expected))
+        assertTreesHaveSameContent(expected, tree)
     }
 }

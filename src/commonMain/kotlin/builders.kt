@@ -26,8 +26,17 @@ class TreeBuilder {
 }
 
 class NodeBuilder {
+    var refs = mutableListOf<Ref<Tree.Node>>()
     val cells = mutableListOf<String>()
     val children = mutableListOf<NodeBuilder>()
+
+    fun ref(ref: Ref<Tree.Node>) {
+        this.refs.add(ref)
+    }
+
+    fun ref(block: (Tree.Node) -> Unit) {
+        this.refs.add(Ref.Callback(block))
+    }
 
     fun cells(vararg newCells: String): NodeBuilder = apply { cells.addAll(newCells) }
     fun cell(data: String): NodeBuilder = apply { cells.add(data) }
@@ -41,8 +50,11 @@ class NodeBuilder {
         return this
     }
 
-    fun cloned(node: Tree.Node): NodeBuilder {
-        TODO("Implement deep clone (and shallow clone)")
+    fun cloneOf(existing: Tree.Node): NodeBuilder {
+        node(*existing.cells.toTypedArray()) {
+            existing.children.forEach { existingChild -> cloneOf(existingChild) }
+        }
+        return this
     }
 
     fun build(parent: Tree?): Tree.Node {
@@ -52,5 +64,28 @@ class NodeBuilder {
             node.children.add(it.build(node))
         }
         return node
+    }
+
+    companion object {
+        fun build(vararg cells: String, block: NodeBuilderBlock? = null): Tree.Node {
+            val builder = NodeBuilder()
+            builder.cells(*cells)
+            block?.let { builder.run(it) }
+            return builder.build(null)
+        }
+
+        fun box() = Ref.Box<Tree.Node>(null)
+    }
+}
+
+sealed class Ref<T> {
+    data class Box<T>(var value: T?) : Ref<T>()
+    data class Callback<T>(val update: (T) -> Unit) : Ref<T>()
+
+    fun set(newValue: T) {
+        return when(this) {
+            is Box<T> -> this.value = newValue
+            is Callback<T> -> update(newValue)
+        }
     }
 }

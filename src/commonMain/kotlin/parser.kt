@@ -17,6 +17,7 @@ class Parser(settings: NotationSettings) {
         val stack = mutableListOf<Tree>(root)
 
         fun parent() = stack.last()
+        fun depth() = stack.size - 2
 
         for (node in ast.nodes) {
             // Pop previous indented nodes off the stack until the last node in the stack
@@ -32,11 +33,15 @@ class Parser(settings: NotationSettings) {
             //  Child word1 word2
             //      Overindented word1 word2
             //  ~~~~ (this is overindented)
-            val overindent = node.indent - parent().indent - 1
-            val overindentWords = (0 until overindent).map { "" }
+            val overindent = node.indent - depth() - 1
+            val overindentWords = if (edgeSymbol == wordBreakSymbol) {
+                (0 until overindent).map { "" }
+            } else {
+                listOf((edgeSymbol ?: "").repeat(overindent))
+            }
             val words: List<String> = overindentWords + node.words.map { it.content }
 
-            val indent = parent().indent + 1
+            val indent = node.indent
             val child = Tree.Node.create(parent(), node, indent, words)
 
             if (overindent > 0) {

@@ -34,7 +34,7 @@ data class Printer(val settings: NotationSettings) {
     private fun printNode(node: Tree.Node, out: Output) {
         // Edge
         val edge = settings.edgeSymbol ?: ""
-        repeat(node.indent) { out.write(edge) }
+        repeat(node.depth) { out.write(edge) }
 
         // Words
         node.cells.forEachIndexed { i, word ->
