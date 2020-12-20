@@ -36,56 +36,58 @@ following tree structure:
 
 <details>
   <summary>As JSON</summary>
+
 ```json
 {
-    "type": "root",
-    "children": [
+  "type": "root",
+  "children": [
+    {
+      "cells": ["package", "ktree"],
+      "children": []
+    },
+    {
+      "cells": [],
+      "children": []
+    },
+    {
+      "cells": ["author"],
+      "children": [
         {
-            "cells": ["package", "ktree"],
-            "children": []
+          "cells": ["name", "Jake"],
+          "children": []
         },
         {
-            "cells": [],
-            "children": []
-        },
-        {
-            "cells": ["author"],
-            "children": [
-                {
-                    "cells": ["name", "Jake"],
-                    "children": []
-                },
-                {
-                    "cells": ["email", "jake@example.com"],
-                    "children": []
-                }
-            ]
-        },
-        {
-            "cells": [],
-            "children": []
-        },
-        {
-            "cells": ["dependencies"],
-            "children": [
-                {
-                    "cells": ["multiplatform", ">=", "2"],
-                    "children": [
-                        {
-                            "cells": ["resolved", "https://example.com/multiplatform"],
-                            "children": []
-                        },
-                        {
-                            "cells": ["checksum", "abcdef1234"],
-                            "children": []
-                        }
-                    ]
-                }
-            ]
+          "cells": ["email", "jake@example.com"],
+          "children": []
         }
-    ]
+      ]
+    },
+    {
+      "cells": [],
+      "children": []
+    },
+    {
+      "cells": ["dependencies"],
+      "children": [
+        {
+          "cells": ["multiplatform", ">=", "2"],
+          "children": [
+            {
+              "cells": ["resolved", "https://example.com/multiplatform"],
+              "children": []
+            },
+            {
+              "cells": ["checksum", "abcdef1234"],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
-````
+```
+
 </details>
 
 ## Project Status
@@ -153,6 +155,7 @@ parses to
 
 <details>
   <summary>As JSON</summary>
+
 ```json
 {
   "type": "root",
@@ -178,4 +181,5 @@ parses to
   ]
 }
 ```
+
 </details>
