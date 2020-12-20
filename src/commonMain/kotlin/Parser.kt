@@ -204,8 +204,8 @@ class Parser(settings: TreeNotation) {
 
             var startIndex = scanner.index
             while (!scanner.ended()) {
-                when (scanner.peek()) {
-                    nodeBreakSymbol -> {
+                when {
+                    scanner.matchString(nodeBreakSymbol) -> {
                         if (startIndex != scanner.index) {
                             produce(Token.Type.Text, startIndex, scanner.index)
                         }
@@ -217,7 +217,17 @@ class Parser(settings: TreeNotation) {
                         scanner.pop(nodeBreakSymbol.length)
                         startIndex = scanner.index
                     }
-                    wordBreakSymbol -> {
+
+                    edgeSymbol != null && scanner.matchString(edgeSymbol) -> {
+                        if (startIndex != scanner.index) {
+                            produce(Token.Type.Text, startIndex, scanner.index)
+                        }
+                        produce(edgeTokenType, scanner.index, scanner.index + edgeSymbol.length)
+                        scanner.pop(edgeSymbol.length)
+                        startIndex = scanner.index
+                    }
+
+                    scanner.matchString(wordBreakSymbol) -> {
                         if (startIndex != scanner.index) {
                             produce(Token.Type.Text, startIndex, scanner.index)
                         }
@@ -229,14 +239,7 @@ class Parser(settings: TreeNotation) {
                         scanner.pop(wordBreakSymbol.length)
                         startIndex = scanner.index
                     }
-                    edgeSymbol -> {
-                        if (startIndex != scanner.index) {
-                            produce(Token.Type.Text, startIndex, scanner.index)
-                        }
-                        produce(edgeTokenType, scanner.index, scanner.index + edgeSymbol.length)
-                        scanner.pop(edgeSymbol.length)
-                        startIndex = scanner.index
-                    }
+
                     else -> scanner.pop()
                 }
             }
@@ -274,6 +277,8 @@ class Scanner(val input: String, var index: Int = 0) {
     fun peek(count: Int = 1): String {
         return input.slice(index until index + count)
     }
+
+    fun matchString(expected: String) = peek(expected.length) == expected
 
     fun pop(count: Int = 1): String {
         val result = peek(count)

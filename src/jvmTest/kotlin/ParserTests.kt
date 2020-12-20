@@ -71,6 +71,35 @@ class ParserTests {
     }
 
     @Test
+    fun testLexTwoSpaces() {
+        val parser = Parser(useSpaces.copy(
+            edgeSymbol = "  "
+        ))
+        val dummyPos = Position(0, 0, 0)
+        val dummySpan = Span(dummyPos, dummyPos)
+        val tokens = parser.lex("human Jake\n  favorite food tofu\n")
+        val expectedTokens = listOf(
+            Token(Token.Type.Text, "human", dummySpan),
+            Token(Token.Type.WordBreak, " ", dummySpan),
+            Token(Token.Type.Text, "Jake", dummySpan),
+            Token(Token.Type.NodeBreak, "\n", dummySpan),
+            Token(Token.Type.Edge, "  ", dummySpan),
+            Token(Token.Type.Text, "favorite", dummySpan),
+            Token(Token.Type.WordBreak, " ", dummySpan),
+            Token(Token.Type.Text, "food", dummySpan),
+            Token(Token.Type.WordBreak, " ", dummySpan),
+            Token(Token.Type.Text, "tofu", dummySpan),
+            Token(Token.Type.NodeBreak, "\n", dummySpan),
+        )
+        assertEquals(expectedTokens.size, tokens.size)
+        tokens.forEachIndexed { index, token ->
+            val expectedToken = expectedTokens[index]
+            assertEquals(expectedToken.type, token.type, "[$index] type matches")
+            assertEquals(expectedToken.string, token.string, "[$index] string matches")
+        }
+    }
+
+    @Test
     fun testAst() {
         val parser = Parser(useSpaces)
         val dummyPos = Position(0, 0, 0)
