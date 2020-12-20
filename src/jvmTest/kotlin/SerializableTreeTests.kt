@@ -37,6 +37,21 @@ class SerializableTreeTests {
                    over-indented child 3
 
         """.trimIndent()
-        print(TreeNotation.Spaces.parse(text).toJson(Json { prettyPrint = true }))
+
+        val text2 = """
+            package ktree
+
+            author
+             name Jake
+             email jake@example.com
+
+            dependencies
+             multiplatform >= 2
+              resolved https://example.com/multiplatform
+              checksum abcdef1234
+
+        """.trimIndent()
+        println(TreeNotation.Spaces.parse(text).toJson(Json { prettyPrint = true }))
+        println(TreeNotation.Spaces.parse(text2).toJson(Json { prettyPrint = true }))
     }
 }

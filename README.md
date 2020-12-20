@@ -34,6 +34,60 @@ following tree structure:
         └── 1. [checksum,abcdef1234]
 ```
 
+<details>
+  <summary>As JSON</summary>
+```json
+{
+    "type": "root",
+    "children": [
+        {
+            "cells": ["package", "ktree"],
+            "children": []
+        },
+        {
+            "cells": [],
+            "children": []
+        },
+        {
+            "cells": ["author"],
+            "children": [
+                {
+                    "cells": ["name", "Jake"],
+                    "children": []
+                },
+                {
+                    "cells": ["email", "jake@example.com"],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "cells": [],
+            "children": []
+        },
+        {
+            "cells": ["dependencies"],
+            "children": [
+                {
+                    "cells": ["multiplatform", ">=", "2"],
+                    "children": [
+                        {
+                            "cells": ["resolved", "https://example.com/multiplatform"],
+                            "children": []
+                        },
+                        {
+                            "cells": ["checksum", "abcdef1234"],
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+````
+</details>
+
 ## Project Status
 
 Experimental.
@@ -97,30 +151,31 @@ parses to
         └── 0. [,,,,over-indented,child,3]
 ```
 
-or, as JSON:
-
-```
+<details>
+  <summary>As JSON</summary>
+```json
 {
-    "type": "root",
-    "children": [
+  "type": "root",
+  "children": [
+    {
+      "cells": ["parent"],
+      "children": [
         {
-            "cells": ["parent"],
-            "children": [
-                {
-                    "cells": ["", "", "over-indented", "child", "1"],
-                    "children": []
-                },
-                {
-                    "cells": ["", "", "over-indented", "child", "2"],
-                    "children": [
-                        {
-                            "cells": ["", "", "", "", "", "over-indented", "child", "3"],
-                            "children": []
-                        }
-                    ]
-                }
-            ]
+          "cells": ["", "", "over-indented", "child", "1"],
+          "children": []
+        },
+        {
+          "cells": ["", "", "over-indented", "child", "2"],
+          "children": [
+            {
+              "cells": ["", "", "", "", "", "over-indented", "child", "3"],
+              "children": []
+            }
+          ]
         }
-    ]
+      ]
+    }
+  ]
 }
 ```
+</details>
