@@ -1,4 +1,9 @@
-data class NotationSettings(
+/**
+ * A tree notation variant. Describes how to parse a string
+ * of indented lines into a Tree.
+ * https://treenotation.org/
+ */
+data class TreeNotation(
     /**
      * nodeBreakSymbol delimits nodes.
      */
@@ -27,18 +32,21 @@ data class NotationSettings(
         }
     }
 
-    fun format(tree: Tree) = Printer(this).printToString(tree)
-
     companion object {
         /** One-space to indent and to separate words */
-        val Spaces = NotationSettings(wordBreakSymbol = " ", edgeSymbol = " ")
+        val Spaces = TreeNotation(wordBreakSymbol = " ", edgeSymbol = " ")
+
         /** Tab to indent and space to separate words */
-        val SpaceCells = NotationSettings(wordBreakSymbol = " ")
+        val SpaceCells = TreeNotation(wordBreakSymbol = " ")
+
         /**
          * Tab to indent and tab to separate words.
          * Somewhat compatible with TSV files.
          */
-        val Tabs = NotationSettings()
+        val Tabs = TreeNotation()
+
+        /** Grid notation - no nesting, very similar to TSV. */
+        val GridNotation = TreeNotation(edgeSymbol = null)
     }
 }
 

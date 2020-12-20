@@ -1,23 +1,22 @@
 /**
  * Print trees to strings (and other string-shaped things)
  */
-data class Printer(val settings: NotationSettings) {
-    // TODO: replace with multiplatform interface, if available?
+data class Formatter(val settings: TreeNotation) {
     interface Output {
         fun write(string: String): Unit
     }
 
     private class StringOutput: Output {
-        val buffer = mutableListOf<String>()
+        val buffer = StringBuilder()
         override fun write(string: String) {
-            buffer.add(string)
+            buffer.append(string)
         }
     }
 
-    fun printToString(tree: Tree): String {
+    fun format(tree: Tree): String {
         val output = StringOutput()
         print(tree, output)
-        return output.buffer.joinToString("")
+        return output.buffer.substring(0)
     }
 
     fun print(tree: Tree, out: Output) {

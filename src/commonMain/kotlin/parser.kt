@@ -2,7 +2,7 @@
 /**
  * Parse tree notion.
  */
-class Parser(settings: NotationSettings) {
+class Parser(settings: TreeNotation) {
     val nodeBreakSymbol = settings.nodeBreakSymbol
     val wordBreakSymbol = settings.wordBreakSymbol
     val edgeSymbol = settings.edgeSymbol

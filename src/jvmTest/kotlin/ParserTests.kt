@@ -13,10 +13,10 @@ val example = """
     
 """.trimIndent()
 
-val useSpaces = NotationSettings.Spaces
+val useSpaces = TreeNotation.Spaces
 
-fun treeToString(tree: Tree) = Printer(useSpaces).printToString(tree)
-fun parsedExample() = Parser(useSpaces).parse(example)
+fun treeToString(tree: Tree) = Formatter(useSpaces).format(tree)
+fun parsedExample() = useSpaces.parse(example)
 fun buildExample() = TreeBuilder.build {
     node("project", "Tree parser in Kotlin")
     node()
@@ -208,8 +208,8 @@ class ParserTests {
     @Test
     fun testPrinter() {
         val tree = buildExample()
-        val printer = Printer(useSpaces)
-        val str = printer.printToString(tree)
+        val printer = Formatter(useSpaces)
+        val str = printer.format(tree)
         assertEquals(example, str)
     }
 

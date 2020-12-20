@@ -87,7 +87,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
             }
             is AddingAt.Index -> {
@@ -103,7 +103,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
 
                 haystack.addChild(needle, AddingAt.Index(6))
@@ -118,7 +118,7 @@ class TransformsTests {
                          5
                          needle
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
 
                 haystack.addChild(needle, AddingAt.Index(3))
@@ -133,7 +133,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
             }
 
@@ -151,7 +151,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
 
                 // Before first
@@ -167,7 +167,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
 
                 // Before missing
@@ -183,7 +183,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
             }
             is AddingAt.After -> {
@@ -200,7 +200,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
 
                 // After last
@@ -216,7 +216,7 @@ class TransformsTests {
                          5
                          needle
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
 
                 // After missing
@@ -232,7 +232,7 @@ class TransformsTests {
                          5
                          needle
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
             }
 
@@ -249,7 +249,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
             }
 
@@ -266,7 +266,7 @@ class TransformsTests {
                          5
                          needle
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
             }
 
@@ -283,7 +283,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
 
                 haystack.addChild(6, needle)
@@ -298,7 +298,7 @@ class TransformsTests {
                          5
                          needle
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
 
                 haystack.addChild(3, needle)
@@ -313,7 +313,7 @@ class TransformsTests {
                          4
                          5
                     """.trimIndent(),
-                    NotationSettings.Spaces.format(haystack).trimEnd()
+                    TreeNotation.Spaces.format(haystack).trimEnd()
                 )
             }
         }.exhaustive
