@@ -1,4 +1,3 @@
-
 /**
  * Parse tree notion.
  */
@@ -175,11 +174,8 @@ class Parser(settings: TreeNotation) {
                     Token.Type.WordBreakOrEdge -> if (inWords()) finishWord()
                         else parseEdge()
                     Token.Type.NodeBreak -> finishNode()
-                    else -> TODO("unreachable")
                 }
             }
-
-            // TODO: finishWord() and finishNode() ?
 
             return AST.File(
                 span = Span(tokens.first().span.start, tokens.last().span.end),

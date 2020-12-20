@@ -94,5 +94,33 @@ parses to
 └── 0. [parent]
     ├── 0. [,,over-indented,child,1]
     └── 1. [,,over-indented,child,2]
-        └── 0. [,,,over-indented,child,3]
+        └── 0. [,,,,over-indented,child,3]
+```
+
+or, as JSON:
+
+```
+{
+    "type": "root",
+    "children": [
+        {
+            "cells": ["parent"],
+            "children": [
+                {
+                    "cells": ["", "", "over-indented", "child", "1"],
+                    "children": []
+                },
+                {
+                    "cells": ["", "", "over-indented", "child", "2"],
+                    "children": [
+                        {
+                            "cells": ["", "", "", "", "", "over-indented", "child", "3"],
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
 ```
