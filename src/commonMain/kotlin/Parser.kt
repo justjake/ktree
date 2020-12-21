@@ -38,10 +38,9 @@ class Parser(settings: TreeNotation) {
             } else {
                 listOf((edgeSymbol ?: "").repeat(overindent))
             }
-            val words: List<String> = overindentWords + node.words.map { it.content }
-
+            val words: MutableList<String> = (overindentWords + node.words.map { it.content }).toMutableList()
             val indent = node.indent
-            val child = Tree.Node.create(parent(), node, indent, words)
+            val child = Tree.Node(parent = parent(), astNode = node, indent = indent, cells = words)
 
             if (overindent > 0) {
                 child.warnings.add(

@@ -59,7 +59,7 @@ class NodeBuilder {
 
     fun build(parent: Tree?): Tree.Node {
         val indent = 1 + (parent?.indent ?: -1)
-        val node = Tree.Node.create(parent, null, indent, cells)
+        val node = Tree.Node(parent=parent, astNode = null, indent = indent, cells = cells)
         children.forEach {
             node.children.add(it.build(node))
         }

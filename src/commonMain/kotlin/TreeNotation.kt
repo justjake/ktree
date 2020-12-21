@@ -65,13 +65,23 @@ sealed class Tree {
     abstract val warnings: List<Warning>
     abstract val depth: Int
 
-    protected fun childrenToString(): String {
-        if (children.isEmpty()) return "[]"
-        return children.joinToString(
-            separator = "\n",
-            prefix = "[\n",
-            postfix = "\n]"
-        ) { "\t${it}" }
+    override fun toString(): String = recursiveToString(0)
+
+    protected fun recursiveToString(indent: Int): String {
+        val outerIndent = " ".repeat(indent)
+        val innerIndent = " ".repeat(indent + 1)
+        val c = when {
+            children.isEmpty() -> "[]"
+            else -> children.joinToString(
+                separator = "\n",
+                prefix = "[\n",
+                postfix = "\n$outerIndent]"
+            ) { innerIndent + it.recursiveToString(indent + 1) }
+        }
+        return when(this) {
+            is Root -> "Tree.Root(children=$c)"
+            is Node -> "Tree.Node(indent=$indent, cells=$cells, children=$c)"
+        }
     }
 
     fun allWarnings(): List<Warning> {
@@ -98,89 +108,48 @@ sealed class Tree {
         override val depth = -1
         override val warnings = mutableListOf<Warning>()
         override fun toString(): String {
-            return "Tree.Root(indent=$indent, children=${childrenToString()}"
+            return recursiveToString(0)
         }
     }
 
-    sealed class Node : Tree() {
-        abstract override var parent: Tree?
-        abstract override val astNode: AST.TreeNode?
-        abstract val cells: List<String>
-        override val children = mutableListOf<Node>()
+    data class Node(
+        override var parent: Tree?,
+        val cells: MutableList<String>,
+        override val indent: Int,
+        override val astNode: AST.TreeNode? = null,
+        override val children: MutableList<Node> = mutableListOf<Node>()
+    ) : Tree() {
         override val warnings = mutableListOf<Warning>()
         override val depth: Int
-            get() = parent.let { when(it) {
-                null -> 0
-                else -> 1 + it.depth
-            }}
-
-        /**
-         * A tree node with no words.
-         * This is typically an empty line.
-         */
-        data class Empty(
-            override var parent: Tree?,
-            override val astNode: AST.TreeNode?,
-            override val indent: Int,
-        ) : Node() {
-            override val cells = listOf<String>()
-            override fun toString(): String {
-                return "Node.Empty(indent=$indent, children=${childrenToString()})"
+            get() = parent.let {
+                when (it) {
+                    null -> 0
+                    else -> 1 + it.depth
+                }
             }
-        }
 
-        /**
-         * A tree node where the first word is blank ("").
-         * Possibly the result of over-indenting a child.
-         */
-        data class Blank(
-            override var parent: Tree?,
-            override val astNode: AST.TreeNode?,
-            override val indent: Int,
-            override val cells: List<String>
-        ) : Node() {
-            override fun toString(): String {
-                return "Node.Blank(indent=$indent, cells=$cells children=${childrenToString()})"
+        var typeCell: String?
+            get() = cells.firstOrNull()
+            set(value) = when(value) {
+                null -> cells.clear()
+                else -> cells[0] = value
             }
-        }
 
-        /**
-         * A tree node with words in it.
-         */
-        data class Typed(
-            override var parent: Tree?,
-            override val astNode: AST.TreeNode?,
-            override val indent: Int,
-            val type: String,
-            val content: List<String>
-        ) : Node() {
-            override val cells: List<String> = listOf(type) + content
-            override fun toString(): String {
-                return "Node.Typed(indent=$indent, type=$type, content=$content children=${childrenToString()})"
+        var dataCells: List<String>
+            get() = when {
+                cells.size > 1 -> cells.subList(1, cells.size)
+                else -> listOf()
             }
-        }
+            set(value) {
+                if (cells.size == 0) {
+                    cells.add("")
+                }
 
-        companion object {
-            /**
-             * Create a Node, picking the Node subtype based on `cells`.
-             */
-            fun create(
-                parent: Tree?,
-                astNode: AST.TreeNode?,
-                indent: Int,
-                cells: List<String>
-            ): Node = when {
-                cells.isEmpty() -> Empty(parent, astNode, indent)
-                cells[0] == "" -> Blank(parent, astNode, indent, cells)
-                else -> Typed(
-                    parent,
-                    astNode,
-                    indent,
-                    cells[0],
-                    cells.slice(1 until cells.size)
-                )
+                value.forEachIndexed { index, s -> cells[index + 1] = s }
+                if (cells.size > value.size + 1) {
+                    cells.subList(value.size + 1, cells.size).clear()
+                }
             }
-        }
     }
 }
 

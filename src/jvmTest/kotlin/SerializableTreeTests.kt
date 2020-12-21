@@ -18,7 +18,7 @@ class SerializableTreeTests {
 
     @Test
     fun testRoundTrip() {
-        assertTreesHaveSameContent(tree, fromSerializableTree(toSerializableTree(tree)))
+        assertTreesHaveSameContent(tree, fromSerializableTree(tree.toSerializableTree()))
         assertTreesHaveSameContent(tree, tree.toSerializableTree().toTree())
     }
 

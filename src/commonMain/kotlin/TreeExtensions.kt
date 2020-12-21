@@ -1,3 +1,5 @@
+fun Tree.getNode(type: String): Tree.Node? = children.find { it.typeCell == type }
+
 // Transforms
 
 /**
@@ -30,9 +32,13 @@ fun Tree.removeChild(child: Tree.Node) {
  * At a child node at `index` in children
  */
 fun Tree.addChild(index: Int, child: Tree.Node) {
-    child.parent?.let { it.removeChild(child) }
+    child.parent?.removeChild(child)
     child.parent = this
-    (children as MutableList<Tree.Node>).add(index, child)
+    if (index >= children.size) {
+        (children as MutableList<Tree.Node>).add(child)
+    } else {
+        (children as MutableList<Tree.Node>).add(index, child)
+    }
 }
 
 /**
@@ -83,4 +89,40 @@ fun Tree.Node.detach() {
 fun Tree.Node.moveTo(parent: Tree, at: AddingAt = AddingAt.End) {
     detach()
     parent.addChild(this, at)
+}
+
+/**
+ * Clone this node
+ */
+fun Tree.Node.cloneWith(cells: Boolean = true, children: Boolean = true, block: NodeBuilderBlock? = null): Tree.Node {
+    return NodeBuilder.build {
+        if (cells) {
+            cells(*this.cells.toTypedArray())
+        }
+
+        if (children) {
+            this@cloneWith.children.forEach { cloneOf(it) }
+        }
+
+        if (block != null) {
+            block(this)
+        }
+    }
+}
+
+fun Tree.setNode(type: String, dataCells: List<String>, children: List<Tree.Node>, block: NodeBuilderBlock? = null): Tree.Node {
+    return when (val existing = this.getNode(type)) {
+        null -> {
+            val node = NodeBuilder.build(type, *dataCells.toTypedArray(), block = block)
+            children.forEach { node.addChild(it) }
+            node
+        }
+        else -> {
+            // TODO: should we really be *mutating* this much? Seems bad.
+            existing.dataCells = dataCells
+            existing.children.forEach { existing.removeChild(it) }
+            children.forEach { existing.addChild(it) }
+            existing
+        }
+    }
 }

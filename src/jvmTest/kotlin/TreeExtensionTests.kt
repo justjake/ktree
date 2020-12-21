@@ -23,6 +23,11 @@ class TransformsTests {
     fun dummyNode() = NodeBuilder.build()
 
     @Test
+    fun testToString() {
+        println(TestData().root)
+    }
+
+    @Test
     fun testMove() {
         val testData = TestData()
         testData.other.moveTo(testData.root)
@@ -220,7 +225,7 @@ class TransformsTests {
                 )
 
                 // After missing
-                haystack.addChild(needle, AddingAt.Before(dummyNode()))
+                haystack.addChild(needle, AddingAt.After(dummyNode()))
                 assertEquals(
                     """
                         haystack
