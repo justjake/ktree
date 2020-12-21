@@ -1,4 +1,3 @@
-fun Tree.getNode(type: String): Tree.Node? = children.find { it.typeCell == type }
 
 // Transforms
 
@@ -51,6 +50,7 @@ sealed class AddingAt {
     data class After(val sibling: Tree.Node) : AddingAt()
     data class Replace(val sibling: Tree.Node): AddingAt()
     data class Index(val index: Int) : AddingAt()
+    data class ReplaceIndex(val index: Int) : AddingAt()
 }
 
 /**
@@ -72,6 +72,11 @@ fun Tree.addChild(child: Tree.Node, at: AddingAt = AddingAt.End) {
         is AddingAt.Replace -> {
             addChild(children.indexOf(at.sibling), child)
             removeChild(at.sibling)
+        }
+        is AddingAt.ReplaceIndex -> {
+            val existing = children[at.index]
+            removeChild(existing)
+            addChild(at.index, child)
         }
     }.exhaustive
 }
@@ -110,19 +115,48 @@ fun Tree.Node.cloneWith(cells: Boolean = true, children: Boolean = true, block: 
     }
 }
 
-fun Tree.setNode(type: String, dataCells: List<String>, children: List<Tree.Node>, block: NodeBuilderBlock? = null): Tree.Node {
-    return when (val existing = this.getNode(type)) {
-        null -> {
-            val node = NodeBuilder.build(type, *dataCells.toTypedArray(), block = block)
-            children.forEach { node.addChild(it) }
-            node
+// Transforms for working with child data
+fun Tree.Node.hasPrefix(type: String, vararg dataPrefix: String): Boolean =
+    typeCell == type &&
+            dataCells.size >= dataPrefix.size &&
+            dataCells.subList(0, dataPrefix.size) == dataPrefix.toList()
+
+
+fun Tree.getChild(type: String, vararg dataPrefix: String): Tree.Node? = children.find {
+    it.hasPrefix(type, *dataPrefix)
+}
+
+fun Tree.getChildData(type: String, vararg dataPrefix: String): Tree.Node? =
+    getChild(type, *dataPrefix)?.dataNode(*dataPrefix)
+
+fun Tree.setChildData(type: String, vararg dataPrefix: String, node: Tree.Node) {
+    val newNode = when {
+        node.hasPrefix(type, *dataPrefix) -> node
+        else -> node.cloneWith(cells = false) {
+            cell(type)
+            cells(*dataPrefix)
+            cells(*node.cells.toTypedArray())
         }
-        else -> {
-            // TODO: should we really be *mutating* this much? Seems bad.
-            existing.dataCells = dataCells
-            existing.children.forEach { existing.removeChild(it) }
-            children.forEach { existing.addChild(it) }
-            existing
+    }
+
+    return when (val child = getChild(type, *dataPrefix)) {
+        null -> this.addChild(newNode)
+        else -> this.addChild(newNode, AddingAt.Replace(child))
+    }
+}
+
+fun Tree.removeChild(type: String, vararg dataPrefix: String) {
+    val child = getChild(type, *dataPrefix)
+    if (child != null) {
+        removeChild(child)
+    }
+}
+
+// TODO: rename to cloneWithoutPrefix?
+private fun Tree.Node.dataNode(vararg omitDataPrefix: String): Tree.Node = cloneWith(cells = false) {
+    this@dataNode.dataCells.forEachIndexed { index, s ->
+        if (omitDataPrefix.size > index && s != omitDataPrefix[index]) {
+            cell(s)
         }
     }
 }
