@@ -68,19 +68,18 @@ sealed class Tree {
     override fun toString(): String = recursiveToString(0)
 
     protected fun recursiveToString(indent: Int): String {
-        val outerIndent = " ".repeat(indent)
-        val innerIndent = " ".repeat(indent + 1)
+        val spaces = " ".repeat(indent)
         val c = when {
             children.isEmpty() -> "[]"
             else -> children.joinToString(
                 separator = "\n",
                 prefix = "[\n",
-                postfix = "\n$outerIndent]"
-            ) { innerIndent + it.recursiveToString(indent + 1) }
+                postfix = "\n$spaces]"
+            ) { it.recursiveToString(indent + 1) }
         }
         return when(this) {
-            is Root -> "Tree.Root(children=$c)"
-            is Node -> "Tree.Node(indent=$indent, cells=$cells, children=$c)"
+            is Root -> "${spaces}Tree.Root(children=$c)"
+            is Node -> "${spaces}Tree.Node(indent=$indent, cells=$cells, children=$c)"
         }
     }
 
