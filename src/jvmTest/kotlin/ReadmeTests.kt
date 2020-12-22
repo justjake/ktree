@@ -71,5 +71,10 @@ parent
         File("README.md").writeText(readme)
         println(readme)
     }
+
+    @Test
+    fun failingTestMaybe() {
+        throw Error("crap!!!")
+    }
 }
 
