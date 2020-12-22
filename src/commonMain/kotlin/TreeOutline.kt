@@ -13,12 +13,12 @@ data class TreeOutline(
     private val lastChildSkipPrefix = space + space + space
 
     fun format(tree: Tree): String = StringBuilder().let {
-        format(tree, "", it)
+        writeToBuilder(tree, "", it)
         // Omit final \n
         it.substring(0, it.length - 1)
     }
 
-    private fun format(tree: Tree, prefix: String, builder: StringBuilder) {
+    private fun writeToBuilder(tree: Tree, prefix: String, builder: StringBuilder) {
         if (tree is Tree.Node) {
             builder.append(tree.cells)
             builder.append(lineBreak)
@@ -34,7 +34,7 @@ data class TreeOutline(
             builder.append(prefix)
             builder.append(nodePrefix)
             builder.append(renderIndex(index))
-            format(node, prefix + childPrefixAddition, builder)
+            writeToBuilder(node, prefix + childPrefixAddition, builder)
         }
     }
 }

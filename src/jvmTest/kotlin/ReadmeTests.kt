@@ -13,6 +13,7 @@ class ReadmeTests {
 
     private val notation = TreeNotation.Spaces
     private fun parse(s: String) = notation.parse(s)
+    private fun parseEqual(s: String) = notation.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings).parse(s)
 
     private val json = Json {
         prettyPrint = true
@@ -57,8 +58,10 @@ parent
                 "AUTHOR" -> notation.format(author)
                 "AUTHOR_JSON" -> author.toJson(json)
                 "OVERINDENTED" -> overindented
-                "OVERINDENTED_OUTLINE" -> parse(overindented).toOutline()
-                "OVERINDENTED_JSON" -> parse(overindented).toJson(json)
+                "OVERINDENTED_STRICT_OUTLINE" -> parse(overindented).toOutline()
+                "OVERINDENTED_STRICT_JSON" -> parse(overindented).toJson(json)
+                "OVERINDENTED_EQUAL_OUTLINE" -> parseEqual(overindented).toOutline()
+                "OVERINDENTED_EQUAL_JSON" -> parseEqual(overindented).toJson(json)
                 else -> throw Error("Unknown replacement var: $varname")
             }
         }

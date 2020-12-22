@@ -89,10 +89,19 @@ $AUTHOR_JSON
 ### Indentation
 
 The official Tree Notation spec is ambiguous about how to handle over-indented
-child nodes. In a case like below, `ktree` ensures all children with the same
-indentation level are treated as siblings. The extra indents are parsed as
-part of the node's text, as either wordBreakSymbols, or as text of the first
-word. *This behavior is non-standard and will not be the default in the future*.
+child nodes. `ktree` allows configuring this behavior.
+
+#### Strict Indentation
+
+```kotlin
+TreeNotation() // default
+TreeNotation(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)
+```
+
+In strict mode (the default), we only parse one additional indentation level for a node.
+The remaining edge symbols are treated as part of the first cell, or as cell seperators.
+This has the consiquence that similarly-over-indented nodes that visually appear to be
+siblings will be parsed as parent-child instead.
 
 ```
 $OVERINDENTED
@@ -101,14 +110,47 @@ $OVERINDENTED
 parses to
 
 ```
-$OVERINDENTED_OUTLINE
+$OVERINDENTED_STRICT_OUTLINE
 ```
 
 <details>
   <summary>As JSON</summary>
 
 ```json
-$OVERINDENTED_JSON
+$OVERINDENTED_STRICT_JSON
+```
+
+</details>
+
+
+
+#### Equally indented children are siblings
+
+```kotlin
+TreeNotation(
+    overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings
+)
+```
+
+With this setting, all children with the same indentation level are treated as siblings. The extra
+indents are parsed as part of the node's text, as either wordBreakSymbols, or as text of the first
+word.
+
+```
+$OVERINDENTED
+```
+
+parses to
+
+```
+$OVERINDENTED_EQUAL_OUTLINE
+```
+
+<details>
+  <summary>As JSON</summary>
+
+```json
+$OVERINDENTED_EQUAL_JSON
 ```
 
 </details>

@@ -28,8 +28,21 @@ data class TreeNotation(
     /**
      * Used for line breaking for error reporting. Not used for parsing.
      */
-    val lineBreak: String = "\n"
+    val lineBreak: String = "\n",
+
+    /**
+     * How over-indentation is handled by the parser.
+     */
+    val overIndentBehavior: OverIndentBehavior = OverIndentBehavior.Strict
 ) {
+    enum class OverIndentBehavior {
+        /**
+         *
+         */
+        Strict,
+        EquallyIndentedChildrenAreSiblings
+    }
+
     init {
         if (nodeBreakSymbol == wordBreakSymbol || nodeBreakSymbol == edgeSymbol) {
             throw IllegalArgumentException("nodeBreakSymbol must be distict from other symbols")

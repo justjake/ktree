@@ -224,7 +224,7 @@ class ParserTests {
         val packageNode = tree.children[0]
 
         val warnings = mutableListOf<Warning>()
-        assertEquals(packageNode.children.size, 2)
+        assertEquals(packageNode.children.size, 1)
         packageNode.children.forEachIndexed { index, node ->
             val warning = node.warnings.first()
             warnings.add(warning)
@@ -243,17 +243,36 @@ class ParserTests {
     }
 
     @Test
-    fun testOverindentedSiblingsParentedToSameNode() {
+    fun testOverindentedSiblingsEqual() {
         val text = """
             package
               id com.example.bad
               version 2.0
         """.trimIndent()
-        val tree = Parser(useSpaces).parse(text)
+        val notation = TreeNotation.Spaces.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings)
+        val tree = notation.parse(text)
         val expected = TreeBuilder.build {
             node("package") {
                 node("", "id", "com.example.bad")
                 node("", "version", "2.0")
+            }
+        }
+        assertTreesHaveSameContent(expected, tree)
+    }
+
+    @Test
+    fun testOverindentedSiblingsStrict() {
+        val text = """
+            package
+              id com.example.bad
+              version 2.0
+        """.trimIndent()
+        val tree = Parser(useSpaces.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)).parse(text)
+        val expected = TreeBuilder.build {
+            node("package") {
+                node("", "id", "com.example.bad") {
+                    node("version", "2.0")
+                }
             }
         }
         print(treeToString(tree))

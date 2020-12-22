@@ -1,11 +1,11 @@
 /**
  * Parse tree notion.
  */
-class Parser(settings: TreeNotation) {
-    val nodeBreakSymbol = settings.nodeBreakSymbol
-    val wordBreakSymbol = settings.wordBreakSymbol
-    val edgeSymbol = settings.edgeSymbol
-    val lineBreak = settings.lineBreak
+class Parser(val notation: TreeNotation) {
+    val nodeBreakSymbol = notation.nodeBreakSymbol
+    val wordBreakSymbol = notation.wordBreakSymbol
+    val edgeSymbol = notation.edgeSymbol
+    val lineBreak = notation.lineBreak
 
     fun lex(text: String): List<Token> = Lexer(text).lex()
 
@@ -16,12 +16,16 @@ class Parser(settings: TreeNotation) {
         val stack = mutableListOf<Tree>(root)
 
         fun parent() = stack.last()
-        fun depth() = stack.size - 2
+        fun depth() = stack.size - 1
+        fun parentLevel() = when (notation.overIndentBehavior) {
+            TreeNotation.OverIndentBehavior.Strict -> depth() - 1
+            TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings -> parent().indent
+        }
 
         for (node in ast.nodes) {
             // Pop previous indented nodes off the stack until the last node in the stack
             // is less indented than the node.
-            while (parent().indent >= node.indent) {
+            while (parentLevel() >= node.indent) {
                 val child = stack.removeLast() as Tree.Node
                 val siblings = parent().children as MutableList<Tree.Node>
                 siblings.add(child)
@@ -32,12 +36,14 @@ class Parser(settings: TreeNotation) {
             //  Child word1 word2
             //      Overindented word1 word2
             //  ~~~~ (this is overindented)
-            val overindent = node.indent - depth() - 1
+            val overindent = node.indent - depth()
             val overindentWords = if (edgeSymbol == wordBreakSymbol) {
                 (0 until overindent).map { "" }
             } else {
                 listOf((edgeSymbol ?: "").repeat(overindent))
             }
+
+            println("overindent $overindent, words $overindentWords")
             val words: MutableList<String> = (overindentWords + node.words.map { it.content }).toMutableList()
             val indent = node.indent
             val child = Tree.Node(parent = parent(), astNode = node, indent = indent, cells = words)

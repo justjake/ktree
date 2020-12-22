@@ -188,10 +188,100 @@ make the result of parsing clear:
 ### Indentation
 
 The official Tree Notation spec is ambiguous about how to handle over-indented
-child nodes. In a case like below, `ktree` ensures all children with the same
-indentation level are treated as siblings. The extra indents are parsed as
-part of the node's text, as either wordBreakSymbols, or as text of the first
-word. *This behavior is non-standard and will not be the default in the future*.
+child nodes. `ktree` allows configuring this behavior.
+
+#### Strict Indentation
+
+```kotlin
+TreeNotation() // default
+TreeNotation(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)
+```
+
+In strict mode (the default), we only parse one additional indentation level for a node.
+The remaining edge symbols are treated as part of the first cell, or as cell seperators.
+This has the consiquence that similarly-over-indented nodes that visually appear to be
+siblings will be parsed as parent-child instead.
+
+```
+parent
+   over-indented child 1
+   over-indented child 2
+       over-indented child 3
+```
+
+parses to
+
+```
+└─ 0. [parent]
+   └─ 0. [, , over-indented, child, 1]
+      └─ 0. [, over-indented, child, 2]
+         └─ 0. [, , , , over-indented, child, 3]
+```
+
+<details>
+  <summary>As JSON</summary>
+
+```json
+{
+  "children": [
+    {
+      "cells": [
+        "parent"
+      ],
+      "children": [
+        {
+          "cells": [
+            "",
+            "",
+            "over-indented",
+            "child",
+            "1"
+          ],
+          "children": [
+            {
+              "cells": [
+                "",
+                "over-indented",
+                "child",
+                "2"
+              ],
+              "children": [
+                {
+                  "cells": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "over-indented",
+                    "child",
+                    "3"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+</details>
+
+
+
+#### Equally indented children are siblings
+
+```kotlin
+TreeNotation(
+    overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings
+)
+```
+
+With this setting, all children with the same indentation level are treated as siblings. The extra
+indents are parsed as part of the node's text, as either wordBreakSymbols, or as text of the first
+word.
 
 ```
 parent

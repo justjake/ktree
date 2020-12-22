@@ -1,4 +1,9 @@
 
+// TODO: why are these extension methods? I had some idea about
+//       how they're not "essential", but it may make cross-language
+//       usage much worse.
+
+
 // Transforms
 
 /**
@@ -160,5 +165,3 @@ private fun Tree.Node.dataNode(vararg omitDataPrefix: String): Tree.Node = clone
         }
     }
 }
-
-// Outline pri

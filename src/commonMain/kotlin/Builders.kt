@@ -1,6 +1,10 @@
 typealias NodeBuilderBlock = NodeBuilder.() -> Unit
+typealias TreeBuilderBlock = TreeBuilder.() -> Unit
 
 class TreeBuilder {
+    constructor()
+    constructor(block: TreeBuilderBlock) { run(block) }
+
     private val refs = mutableListOf<Ref<Tree.Root>>()
     private val delegatedNodeBuilder = NodeBuilder()
 
@@ -23,15 +27,17 @@ class TreeBuilder {
     }
 
     companion object {
-        fun build(block: TreeBuilder.() -> Unit): Tree.Root {
-            val builder = TreeBuilder()
-            builder.run(block)
+        fun build(block: TreeBuilderBlock): Tree.Root {
+            val builder = TreeBuilder(block)
             return builder.build()
         }
     }
 }
 
 class NodeBuilder {
+    constructor()
+    constructor(block: NodeBuilderBlock) { run(block) }
+
     val refs = mutableListOf<Ref<Tree.Node>>()
     val cells = mutableListOf<String>()
     val children = mutableListOf<NodeBuilder>()
@@ -89,10 +95,5 @@ sealed class Ref<T> {
             is Box<T> -> this.value = newValue
             is Callback<T> -> update(newValue)
         }
-    }
-
-    companion object {
-        fun <T>Ref(): Ref<T> = Box<T>(null)
-        fun <T>Ref(block: (T)->Unit): Ref<T> = Callback(block)
     }
 }
