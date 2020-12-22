@@ -129,7 +129,7 @@ data class TreeNotation(
     val nodeBreakSymbol: String = "\n",
 
     /**
-     * wordBreakSymbol delimits words in the node string.
+     * wordBreakSymbol delimits cells in the node string.
      */
     val wordBreakSymbol: String = "\t",
 
@@ -144,11 +144,54 @@ data class TreeNotation(
 )
 ```
 
+### Nodes
+
+Each line (by default) in the file is a *node* in the tree.
+The text in a node is split into cells. The children of a node are the lines underneath a node that
+are indented by one tab.
+
+The example below contains a parent node `author` with two child nodes:
+
+```
+author
+ name Jake
+ email jake@example.com
+
+```
+
+Tree notation is canonically serialized to JSON as objects with `cells: String[]`
+and `children: Node[]` properties, which are omitted when empty. This serialization should
+make the result of parsing clear:
+
+```json
+{
+  "cells": [
+    "author"
+  ],
+  "children": [
+    {
+      "cells": [
+        "name",
+        "Jake"
+      ]
+    },
+    {
+      "cells": [
+        "email",
+        "jake@example.com"
+      ]
+    }
+  ]
+}
+```
+
+### Indentation
+
 The official Tree Notation spec is ambiguous about how to handle over-indented
 child nodes. In a case like below, `ktree` ensures all children with the same
 indentation level are treated as siblings. The extra indents are parsed as
 part of the node's text, as either wordBreakSymbols, or as text of the first
-word.
+word. *This behavior is non-standard and will not be the default in the future*.
 
 ```
 parent

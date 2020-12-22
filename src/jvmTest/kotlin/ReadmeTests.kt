@@ -5,15 +5,15 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
 
+@ExperimentalSerializationApi
 class ReadmeTests {
     private fun readResource(name: String) =
         javaClass.classLoader.getResourceAsStream(name)
-
     private val variableRegex = Regex("\\$([\\w_]+)")
 
-    private fun parse(s: String) = TreeNotation.Spaces.parse(s)
+    private val notation = TreeNotation.Spaces
+    private fun parse(s: String) = notation.parse(s)
 
-    @ExperimentalSerializationApi
     private val json = Json {
         prettyPrint = true
         prettyPrintIndent = "  "
@@ -39,6 +39,12 @@ parent
        over-indented child 3
     """.trimIndent()
 
+    private val author = NodeBuilder.build {
+        cell("author")
+        node("name", "Jake")
+        node("email", "jake@example.com")
+    }
+
     @Test
     fun testBuildReadme() {
         val readmeIn = readResource("README.in.md")!!.readAllBytes().decodeToString()
@@ -48,6 +54,8 @@ parent
                 "KTREE" -> ktree
                 "KTREE_OUTLINE" -> parse(ktree).toOutline()
                 "KTREE_JSON" -> parse(ktree).toJson(json)
+                "AUTHOR" -> notation.format(author)
+                "AUTHOR_JSON" -> author.toJson(json)
                 "OVERINDENTED" -> overindented
                 "OVERINDENTED_OUTLINE" -> parse(overindented).toOutline()
                 "OVERINDENTED_JSON" -> parse(overindented).toJson(json)

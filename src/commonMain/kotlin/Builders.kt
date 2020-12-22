@@ -1,9 +1,14 @@
 typealias NodeBuilderBlock = NodeBuilder.() -> Unit
 
 class TreeBuilder {
+    private val refs = mutableListOf<Ref<Tree.Root>>()
     private val delegatedNodeBuilder = NodeBuilder()
+
     val children: MutableList<NodeBuilder>
         get() = delegatedNodeBuilder.children
+
+    fun ref(ref: Ref<Tree.Root>) = refs.add(ref)
+    fun ref(block: (Tree.Root)->Unit) = this.refs.add(Ref.Callback(block))
 
     fun node(vararg cells: String, block: NodeBuilderBlock? = null) =
         apply { delegatedNodeBuilder.node(*cells, block = block) }
@@ -13,6 +18,7 @@ class TreeBuilder {
         children.forEach {
             root.children.add(it.build(root))
         }
+        refs.forEach { it.set(root) }
         return root
     }
 
@@ -26,17 +32,12 @@ class TreeBuilder {
 }
 
 class NodeBuilder {
-    var refs = mutableListOf<Ref<Tree.Node>>()
+    val refs = mutableListOf<Ref<Tree.Node>>()
     val cells = mutableListOf<String>()
     val children = mutableListOf<NodeBuilder>()
 
-    fun ref(ref: Ref<Tree.Node>) {
-        this.refs.add(ref)
-    }
-
-    fun ref(block: (Tree.Node) -> Unit) {
-        this.refs.add(Ref.Callback(block))
-    }
+    fun ref(ref: Ref<Tree.Node>) = this.refs.add(ref)
+    fun ref(block: (Tree.Node)->Unit) = this.refs.add(Ref.Callback(block))
 
     fun cells(vararg newCells: String): NodeBuilder = apply { cells.addAll(newCells) }
     fun cell(data: String): NodeBuilder = apply { cells.add(data) }
@@ -63,6 +64,7 @@ class NodeBuilder {
         children.forEach {
             node.children.add(it.build(node))
         }
+        refs.forEach { it.set(node) }
         return node
     }
 
@@ -87,5 +89,10 @@ sealed class Ref<T> {
             is Box<T> -> this.value = newValue
             is Callback<T> -> update(newValue)
         }
+    }
+
+    companion object {
+        fun <T>Ref(): Ref<T> = Box<T>(null)
+        fun <T>Ref(block: (T)->Unit): Ref<T> = Callback(block)
     }
 }
