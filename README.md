@@ -22,16 +22,16 @@ With the appropriate notation parser settings, this text parses into the
 following tree structure:
 
 ```
-├── 0. [package,ktree]
-├── 1. []
-├── 2. [author]
-│   ├── 0. [name,jake]
-│   └── 1. [email,jake@example.com]
-├── 3. []
-└── 4. [dependencies]
-    └── 0. [multiplatform,>=,2]
-        ├── 0. [resolved,https://example.com/multiplatform]
-        └── 1. [checksum,abcdef1234]
+├─ 0. [package, ktree]
+├─ 1. []
+├─ 2. [author]
+│  ├─ 0. [name, Jake]
+│  └─ 1. [email, jake@example.com]
+├─ 3. []
+└─ 4. [dependencies]
+   └─ 0. [multiplatform, >=, 2]
+      ├─ 0. [resolved, https://example.com/multiplatform]
+      └─ 1. [checksum, abcdef1234]
 ```
 
 <details>
@@ -39,46 +39,59 @@ following tree structure:
 
 ```json
 {
-  "type": "root",
   "children": [
     {
-      "cells": ["package", "ktree"],
-      "children": []
+      "cells": [
+        "package",
+        "ktree"
+      ]
     },
     {
-      "cells": [],
-      "children": []
     },
     {
-      "cells": ["author"],
+      "cells": [
+        "author"
+      ],
       "children": [
         {
-          "cells": ["name", "Jake"],
-          "children": []
+          "cells": [
+            "name",
+            "Jake"
+          ]
         },
         {
-          "cells": ["email", "jake@example.com"],
-          "children": []
+          "cells": [
+            "email",
+            "jake@example.com"
+          ]
         }
       ]
     },
     {
-      "cells": [],
-      "children": []
     },
     {
-      "cells": ["dependencies"],
+      "cells": [
+        "dependencies"
+      ],
       "children": [
         {
-          "cells": ["multiplatform", ">=", "2"],
+          "cells": [
+            "multiplatform",
+            ">=",
+            "2"
+          ],
           "children": [
             {
-              "cells": ["resolved", "https://example.com/multiplatform"],
-              "children": []
+              "cells": [
+                "resolved",
+                "https://example.com/multiplatform"
+              ]
             },
             {
-              "cells": ["checksum", "abcdef1234"],
-              "children": []
+              "cells": [
+                "checksum",
+                "abcdef1234"
+              ]
             }
           ]
         }
@@ -147,10 +160,10 @@ parent
 parses to
 
 ```
-└── 0. [parent]
-    ├── 0. [,,over-indented,child,1]
-    └── 1. [,,over-indented,child,2]
-        └── 0. [,,,,over-indented,child,3]
+└─ 0. [parent]
+   ├─ 0. [, , over-indented, child, 1]
+   └─ 1. [, , over-indented, child, 2]
+      └─ 0. [, , , , , over-indented, child, 3]
 ```
 
 <details>
@@ -158,21 +171,41 @@ parses to
 
 ```json
 {
-  "type": "root",
   "children": [
     {
-      "cells": ["parent"],
+      "cells": [
+        "parent"
+      ],
       "children": [
         {
-          "cells": ["", "", "over-indented", "child", "1"],
-          "children": []
+          "cells": [
+            "",
+            "",
+            "over-indented",
+            "child",
+            "1"
+          ]
         },
         {
-          "cells": ["", "", "over-indented", "child", "2"],
+          "cells": [
+            "",
+            "",
+            "over-indented",
+            "child",
+            "2"
+          ],
           "children": [
             {
-              "cells": ["", "", "", "", "", "over-indented", "child", "3"],
-              "children": []
+              "cells": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "over-indented",
+                "child",
+                "3"
+              ]
             }
           ]
         }

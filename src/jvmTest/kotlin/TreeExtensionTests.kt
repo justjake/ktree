@@ -95,6 +95,22 @@ class TransformsTests {
                     TreeNotation.Spaces.format(haystack).trimEnd()
                 )
             }
+            is AddingAt.ReplaceIndex -> {
+                haystack.addChild(needle, AddingAt.ReplaceIndex(3))
+                assertEquals(
+                    """
+                        haystack
+                         0
+                         1
+                         2
+                         needle
+                         4
+                         5
+                    """.trimIndent(),
+                    TreeNotation.Spaces.format(haystack).trimEnd()
+                )
+
+            }
             is AddingAt.Index -> {
                 haystack.addChild(needle, AddingAt.Index(0))
                 assertEquals(
