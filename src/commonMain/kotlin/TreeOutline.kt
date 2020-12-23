@@ -1,3 +1,7 @@
+/**
+ * Convert a tree into an easily-readable outline format that's
+ * nice for figuring out parse errors or indexes for transforms
+ */
 data class TreeOutline(
     val space: String = " ",
     val skip: String = "│",

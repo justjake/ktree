@@ -55,7 +55,7 @@ parent
                 "KTREE" -> ktree
                 "KTREE_OUTLINE" -> parse(ktree).toOutline()
                 "KTREE_JSON" -> parse(ktree).toJson(json)
-                "AUTHOR" -> notation.format(author)
+                "AUTHOR" -> notation.format(author).trimEnd()
                 "AUTHOR_JSON" -> author.toJson(json)
                 "OVERINDENTED" -> overindented
                 "OVERINDENTED_STRICT_OUTLINE" -> parse(overindented).toOutline()
@@ -70,11 +70,6 @@ parent
 
         File("README.md").writeText(readme)
         println(readme)
-    }
-
-    @Test
-    fun failingTestMaybe() {
-        throw Error("crap!!!")
     }
 }
 

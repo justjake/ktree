@@ -2,15 +2,24 @@
  * Parse tree notion.
  */
 class Parser(val notation: TreeNotation) {
-    val nodeBreakSymbol = notation.nodeBreakSymbol
-    val wordBreakSymbol = notation.wordBreakSymbol
-    val edgeSymbol = notation.edgeSymbol
-    val lineBreak = notation.lineBreak
+    private val nodeBreakSymbol = notation.nodeBreakSymbol
+    private val wordBreakSymbol = notation.wordBreakSymbol
+    private val edgeSymbol = notation.edgeSymbol
+    private val lineBreak = notation.lineBreak
 
+    /**
+     * Tokenize text
+     */
     fun lex(text: String): List<Token> = Lexer(text).lex()
 
+    /**
+     * Convert tokens into an AST
+     */
     fun ast(inputFile: InputFile, tokens: List<Token>) = TokenParser(inputFile, tokens).parse()
 
+    /**
+     * Convert an AST into a Tree
+     */
     fun tree(ast: AST.File): Tree.Root {
         val root = Tree.Root(ast)
         val stack = mutableListOf<Tree>(root)
@@ -43,7 +52,6 @@ class Parser(val notation: TreeNotation) {
                 listOf((edgeSymbol ?: "").repeat(overindent))
             }
 
-            println("overindent $overindent, words $overindentWords")
             val words: MutableList<String> = (overindentWords + node.words.map { it.content }).toMutableList()
             val indent = node.indent
             val child = Tree.Node(parent = parent(), astNode = node, indent = indent, cells = words)
@@ -285,13 +293,6 @@ class Scanner(val input: String, var index: Int = 0) {
         val result = peek(count)
         index += count
         return result
-    }
-
-    fun popString(expected: String): String? {
-        if (peek(expected.length) == expected) {
-            return pop(expected.length)
-        }
-        return null
     }
 
     fun ended(): Boolean {

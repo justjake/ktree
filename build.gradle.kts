@@ -1,13 +1,22 @@
 plugins {
     kotlin("multiplatform") version "1.4.10"
     kotlin("plugin.serialization") version "1.4.10"
+    id("maven-publish")
 }
 
 group = "tl.jake.ktree"
-version = "1.0-SNAPSHOT"
+version = "0.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+}
+
+publishing {
+    repositories {
+        maven {
+            mavenCentral()
+        }
+    }
 }
 
 kotlin {

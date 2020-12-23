@@ -105,7 +105,18 @@ following tree structure:
 
 ## Project Status
 
-Experimental.
+Experimental. Outstanding TODOs:
+
+- [ ] Figure out if I need to put `package ktree` at the top of every file
+- [ ] JVM (Maven? Bintray?) build and release.
+  Apparently, things are more difficult in java-land than being the first person to
+  `npm publish` with your package name in package.json. This is sad.
+  So far, my research points to:
+  - https://stackoverflow.com/questions/28846802/how-to-manually-publish-jar-to-maven-central
+  - https://central.sonatype.org/pages/ossrh-guide.html
+  - https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:repositories
+  - [x] Open JIRA ticket https://issues.sonatype.org/browse/OSSRH-62956
+- [ ] NPM build and release.
 
 This project intends to target all of Kotlin's supported platforms eventually.
 For now, multiplatform kotlin projects are alpha status, so don't expect too much.
@@ -156,7 +167,6 @@ The example below contains a parent node `author` with two child nodes:
 author
  name Jake
  email jake@example.com
-
 ```
 
 Tree notation is canonically serialized to JSON as objects with `cells: String[]`
