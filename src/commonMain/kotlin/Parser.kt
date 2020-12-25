@@ -193,8 +193,13 @@ class Parser(val notation: TreeNotation) {
                 }
             }
 
+            val span = if (tokens.size == 0) {
+                Span(Position(0, 0, 0), Position(0, 0, 0))
+            } else {
+                Span(tokens.first().span.start, tokens.last().span.end)
+            }
             return AST.File(
-                span = Span(tokens.first().span.start, tokens.last().span.end),
+                span = span,
                 nodes = nodes,
                 raw = inputFile,
             )

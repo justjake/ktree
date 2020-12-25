@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.cli.jvm.compiler.findMainClass
+
 plugins {
     kotlin("multiplatform") version "1.4.10"
     kotlin("plugin.serialization") version "1.4.10"
@@ -6,6 +8,7 @@ plugins {
 
 group = "tl.jake.ktree"
 version = "0.0-SNAPSHOT"
+val entryPackage = "tl.jake.ktree.cli"
 
 repositories {
     mavenCentral()
@@ -27,7 +30,15 @@ kotlin {
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
         }
-
+        withJava()
+        val jvmJar by tasks.getting(org.gradle.jvm.tasks.Jar::class) {
+            doFirst {
+                manifest {
+                    attributes["Main-Class"] = "$entryPackage.MainKt"
+                }
+                from(configurations.getByName("runtimeClasspath").map { if (it.isDirectory) it else zipTree(it) })
+            }
+        }
     }
     js(IR) {
         useCommonJs()
@@ -46,6 +57,17 @@ kotlin {
         hostOs == "Linux" -> linuxX64("native")
         isMingwX64 -> mingwX64("native")
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+    }
+
+    nativeTarget.binaries {
+        executable("ktree") {
+            entryPoint = "$entryPackage.main"
+            runTask?.standardInput = """
+                example overindent
+                ${"\t\t"}child 1
+                ${"\t\t"}child 2
+            """.trimIndent().byteInputStream()
+        }
     }
 
 

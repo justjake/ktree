@@ -29,7 +29,7 @@ $KTREE_JSON
 Experimental. Outstanding TODOs:
 
 - [x] Figure out if I need to put `package ktree` at the top of every file
-    - Added `package tl.jake.ktree`
+    - [x] Added `package tl.jake.ktree`, etc, to every file
 - [ ] JVM (Maven? Bintray?) build and release. Apparently, things are more difficult in java-land
   than being the first person to
   `npm publish` with your package name in package.json. This is sad. So far, my research points to:
@@ -80,7 +80,8 @@ data class TreeNotation(
 ### Nodes
 
 Each line (by default) in the file is a *node* in the tree. The text in a node is split into cells.
-The children of a node are the lines underneath a node that are indented by one tab.
+The children of a node are the lines underneath a node that are indented by one `edgeSymbol` (
+default: one tab).
 
 The example below contains a parent node `author` with two child nodes:
 
@@ -104,6 +105,7 @@ allows configuring this behavior.
 #### Strict Indentation
 
 ```kotlin
+import tl.jake.ktree.TreeNotation
 TreeNotation() // default
 TreeNotation(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)
 ```
@@ -135,6 +137,7 @@ $OVERINDENTED_STRICT_JSON
 #### Equally indented children are siblings
 
 ```kotlin
+import tl.jake.ktree.TreeNotation
 TreeNotation(
     overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings
 )

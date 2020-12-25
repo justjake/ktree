@@ -9,6 +9,7 @@ import kotlinx.serialization.json.*
  * of indented lines into a Tree.
  * https://treenotation.org/
  */
+@Serializable
 data class TreeNotation(
     /**
      * nodeBreakSymbol delimits nodes.
@@ -37,11 +38,12 @@ data class TreeNotation(
      */
     val overIndentBehavior: OverIndentBehavior = OverIndentBehavior.Strict
 ) {
+    @Serializable
     enum class OverIndentBehavior {
-        /**
-         *
-         */
+        @SerialName("strict")
         Strict,
+
+        @SerialName("equally-indented-children-are-siblings")
         EquallyIndentedChildrenAreSiblings
     }
 
