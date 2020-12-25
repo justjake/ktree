@@ -52,7 +52,7 @@ parent
     }
 
     @Test
-    fun testBuildReadme() {
+    fun `build README dot md`() {
         val readmeIn = readResource("README.in.md")!!.readAllBytes().decodeToString()
         val readme = readmeIn.replace(variableRegex) {
             val varname = it.groups[1]!!.value

@@ -19,41 +19,14 @@ class SerializableTreeTests {
     }
 
     @Test
-    fun testRoundTrip() {
+    fun `verify round-trip to serializable tree`() {
         assertTreesHaveSameContent(tree, fromSerializableTree(tree.toSerializableTree()))
         assertTreesHaveSameContent(tree, tree.toSerializableTree().toTree())
     }
 
     @Test
-    fun testJsonRoundTrip() {
+    fun `verify round-trip to json`() {
         print(tree.toJson(Json { prettyPrint = true }))
         assertTreesHaveSameContent(tree, fromJson(tree.toJson()))
-    }
-
-    @Test
-    fun readmeExample() {
-        val text = """
-            parent
-               over-indented child 1
-               over-indented child 2
-                   over-indented child 3
-
-        """.trimIndent()
-
-        val text2 = """
-            package ktree
-
-            author
-             name Jake
-             email jake@example.com
-
-            dependencies
-             multiplatform >= 2
-              resolved https://example.com/multiplatform
-              checksum abcdef1234
-
-        """.trimIndent()
-        println(TreeNotation.Spaces.parse(text).toJson(Json { prettyPrint = true }))
-        println(TreeNotation.Spaces.parse(text2).toJson(Json { prettyPrint = true }))
     }
 }

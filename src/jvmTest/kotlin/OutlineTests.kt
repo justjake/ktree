@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class OutlineTests {
     @Test
-    fun testOutline() {
+    fun `test toOutline`() {
         val example = """
 package ktree
 

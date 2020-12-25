@@ -25,12 +25,12 @@ class TransformsTests {
     fun dummyNode() = NodeBuilder.build()
 
     @Test
-    fun testToString() {
+    fun `run toString`() {
         println(TestData().root)
     }
 
     @Test
-    fun testMove() {
+    fun `test moveTo`() {
         val testData = TestData()
         testData.other.moveTo(testData.root)
         assertTreesHaveSameContent(
@@ -49,27 +49,27 @@ class TransformsTests {
     }
 
     @Test
-    fun testAddAtReplace() = testAdd(AddingAt.Replace(dummyNode()))
+    fun `test addAt with Replace`() = testAdd(AddingAt.Replace(dummyNode()))
 
     @Test
-    fun testAddAtIndex() = testAdd(AddingAt.Index(0))
+    fun `test addAt with Index`() = testAdd(AddingAt.Index(0))
 
     @Test
-    fun testAddBefore() = testAdd(AddingAt.Before(dummyNode()))
+    fun `test addAt Before`() = testAdd(AddingAt.Before(dummyNode()))
 
     @Test
-    fun testAddAfter() = testAdd(AddingAt.After(dummyNode()))
+    fun `test addAt After`() = testAdd(AddingAt.After(dummyNode()))
 
     @Test
-    fun testAddStart() = testAdd(AddingAt.Start)
+    fun `test addAt Start`() = testAdd(AddingAt.Start)
 
     @Test
-    fun testAddEnd() = testAdd(AddingAt.End)
+    fun `test addAt End`() = testAdd(AddingAt.End)
 
     @Test
-    fun testAddLowLevel() = testAdd(null)
+    fun `test addAt with low level index`() = testAdd(null)
 
-    fun testAdd(type: AddingAt?) {
+    private fun testAdd(type: AddingAt?) {
         val needle = NodeBuilder.build("needle")
         val haystack = NodeBuilder.build("haystack") {
             node("0")

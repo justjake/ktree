@@ -46,7 +46,7 @@ fun assertTreesHaveSameContent(expected: Tree, actual: Tree, prefix: String = ""
 
 class ParserTests {
     @Test
-    fun testLex() {
+    fun `test lex produces the expected token contexts`() {
         val parser = Parser(useSpaces)
         val dummyPos = Position(0, 0, 0)
         val dummySpan = Span(dummyPos, dummyPos)
@@ -73,7 +73,7 @@ class ParserTests {
     }
 
     @Test
-    fun testLexTwoSpaces() {
+    fun `test lexing with mutli-space edge symbol`() {
         val parser = Parser(
             useSpaces.copy(
                 edgeSymbol = "  "
@@ -104,7 +104,7 @@ class ParserTests {
     }
 
     @Test
-    fun testAst() {
+    fun `test converting tokens into AST`() {
         val parser = Parser(useSpaces)
         val dummyPos = Position(0, 0, 0)
         val dummySpan = Span(dummyPos, dummyPos)
@@ -173,7 +173,7 @@ class ParserTests {
     }
 
     @Test
-    fun testTreeParser() {
+    fun `test turning AST into a full Tree`() {
         val parser = Parser(useSpaces)
         val dummyPos = Position(0, 0, 0)
         val dummySpan = Span(dummyPos, dummyPos)
@@ -204,13 +204,12 @@ class ParserTests {
     }
 
     @Test
-    fun testParser() {
-        val tree = parsedExample()
+    fun `test end-to-end parser`() {
         assertEquals(treeToString(buildExample()), treeToString(parsedExample()))
     }
 
     @Test
-    fun testOverIndentWarnings() {
+    fun `when overindented, emit appropriate warnings`() {
         val text = """
             package 
               id com.example.bad
@@ -252,7 +251,7 @@ class ParserTests {
     }
 
     @Test
-    fun testOverindentedSiblingsEqual() {
+    fun `test equal overIndentBehavior`() {
         val text = """
             package
               id com.example.bad
@@ -271,7 +270,7 @@ class ParserTests {
     }
 
     @Test
-    fun testOverindentedSiblingsStrict() {
+    fun `test strict default overIndentBehavior`() {
         val text = """
             package
               id com.example.bad
