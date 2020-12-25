@@ -1,3 +1,5 @@
+package tl.jake.ktree
+
 /**
  * Print trees to strings (and other string-shaped things)
  */
@@ -6,7 +8,7 @@ data class Formatter(val settings: TreeNotation) {
         fun write(string: String): Unit
     }
 
-    private class StringOutput: Output {
+    private class StringOutput : Output {
         val buffer = StringBuilder()
         override fun write(string: String) {
             buffer.append(string)

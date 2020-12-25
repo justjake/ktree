@@ -1,3 +1,5 @@
+package tl.jake.ktree
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -78,7 +80,7 @@ class TransformsTests {
             node("5")
         }
 
-        when(type) {
+        when (type) {
             is AddingAt.Replace -> {
                 val target = haystack.children[3]
                 haystack.addChild(needle, AddingAt.Replace(target))

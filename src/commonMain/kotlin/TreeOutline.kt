@@ -1,3 +1,5 @@
+package tl.jake.ktree
+
 /**
  * Convert a tree into an easily-readable outline format that's
  * nice for figuring out parse errors or indexes for transforms
@@ -9,7 +11,7 @@ data class TreeOutline(
     val child: String = "├",
     val lastChild: String = "└",
     val lineBreak: String = "\n",
-    val renderIndex: (Int)->String = fun (i) = "$i. "
+    val renderIndex: (Int) -> String = fun(i) = "$i. "
 ) {
     private val childPrefix = child + dash + space
     private val lastChildPrefix = lastChild + dash + space

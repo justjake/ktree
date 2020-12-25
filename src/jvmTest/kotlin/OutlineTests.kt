@@ -1,3 +1,5 @@
+package tl.jake.ktree
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

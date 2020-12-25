@@ -1,9 +1,13 @@
+package tl.jake.ktree
+
 typealias NodeBuilderBlock = NodeBuilder.() -> Unit
 typealias TreeBuilderBlock = TreeBuilder.() -> Unit
 
 class TreeBuilder {
     constructor()
-    constructor(block: TreeBuilderBlock) { run(block) }
+    constructor(block: TreeBuilderBlock) {
+        run(block)
+    }
 
     private val refs = mutableListOf<Ref<Tree.Root>>()
     private val delegatedNodeBuilder = NodeBuilder()
@@ -12,7 +16,7 @@ class TreeBuilder {
         get() = delegatedNodeBuilder.children
 
     fun ref(ref: Ref<Tree.Root>) = refs.add(ref)
-    fun ref(block: (Tree.Root)->Unit) = this.refs.add(Ref.Callback(block))
+    fun ref(block: (Tree.Root) -> Unit) = this.refs.add(Ref.Callback(block))
 
     fun node(vararg cells: String, block: NodeBuilderBlock? = null) =
         apply { delegatedNodeBuilder.node(*cells, block = block) }
@@ -36,14 +40,16 @@ class TreeBuilder {
 
 class NodeBuilder {
     constructor()
-    constructor(block: NodeBuilderBlock) { run(block) }
+    constructor(block: NodeBuilderBlock) {
+        run(block)
+    }
 
     val refs = mutableListOf<Ref<Tree.Node>>()
     val cells = mutableListOf<String>()
     val children = mutableListOf<NodeBuilder>()
 
     fun ref(ref: Ref<Tree.Node>) = this.refs.add(ref)
-    fun ref(block: (Tree.Node)->Unit) = this.refs.add(Ref.Callback(block))
+    fun ref(block: (Tree.Node) -> Unit) = this.refs.add(Ref.Callback(block))
 
     fun cells(vararg newCells: String): NodeBuilder = apply { cells.addAll(newCells) }
     fun cell(data: String): NodeBuilder = apply { cells.add(data) }
@@ -66,7 +72,7 @@ class NodeBuilder {
 
     fun build(parent: Tree?): Tree.Node {
         val indent = 1 + (parent?.indent ?: -1)
-        val node = Tree.Node(parent=parent, astNode = null, indent = indent, cells = cells)
+        val node = Tree.Node(parent = parent, astNode = null, indent = indent, cells = cells)
         children.forEach {
             node.children.add(it.build(node))
         }
@@ -91,7 +97,7 @@ sealed class Ref<T> {
     data class Callback<T>(val update: (T) -> Unit) : Ref<T>()
 
     fun set(newValue: T) {
-        return when(this) {
+        return when (this) {
             is Box<T> -> this.value = newValue
             is Callback<T> -> update(newValue)
         }

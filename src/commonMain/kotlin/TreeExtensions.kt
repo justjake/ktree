@@ -1,3 +1,4 @@
+package tl.jake.ktree
 
 // TODO: why are these extension methods? I had some idea about
 //       how they're not "essential", but it may make cross-language
@@ -25,7 +26,7 @@ fun Tree.removeChild(child: Tree.Node) {
     checkHasChild(this, child)
 
     child.parent = null
-    when(this) {
+    when (this) {
         is Tree.Root -> children.remove(child)
         is Tree.Node -> children.remove(child)
     }.exhaustive
@@ -53,7 +54,7 @@ sealed class AddingAt {
     object End : AddingAt()
     data class Before(val sibling: Tree.Node) : AddingAt()
     data class After(val sibling: Tree.Node) : AddingAt()
-    data class Replace(val sibling: Tree.Node): AddingAt()
+    data class Replace(val sibling: Tree.Node) : AddingAt()
     data class Index(val index: Int) : AddingAt()
     data class ReplaceIndex(val index: Int) : AddingAt()
 }
@@ -62,7 +63,7 @@ sealed class AddingAt {
  * Add a child node
  */
 fun Tree.addChild(child: Tree.Node, at: AddingAt = AddingAt.End) {
-    when(at) {
+    when (at) {
         is AddingAt.Start -> addChild(0, child)
         is AddingAt.End -> addChild(children.size, child)
         is AddingAt.Before -> {
@@ -104,7 +105,11 @@ fun Tree.Node.moveTo(parent: Tree, at: AddingAt = AddingAt.End) {
 /**
  * Clone this node
  */
-fun Tree.Node.cloneWith(cells: Boolean = true, children: Boolean = true, block: NodeBuilderBlock? = null): Tree.Node {
+fun Tree.Node.cloneWith(
+    cells: Boolean = true,
+    children: Boolean = true,
+    block: NodeBuilderBlock? = null
+): Tree.Node {
     return NodeBuilder.build {
         if (cells) {
             cells(*this.cells.toTypedArray())
@@ -158,10 +163,11 @@ fun Tree.removeChild(type: String, vararg dataPrefix: String) {
 }
 
 // TODO: rename to cloneWithoutPrefix?
-private fun Tree.Node.dataNode(vararg omitDataPrefix: String): Tree.Node = cloneWith(cells = false) {
-    this@dataNode.dataCells.forEachIndexed { index, s ->
-        if (omitDataPrefix.size > index && s != omitDataPrefix[index]) {
-            cell(s)
+private fun Tree.Node.dataNode(vararg omitDataPrefix: String): Tree.Node =
+    cloneWith(cells = false) {
+        this@dataNode.dataCells.forEachIndexed { index, s ->
+            if (omitDataPrefix.size > index && s != omitDataPrefix[index]) {
+                cell(s)
+            }
         }
     }
-}

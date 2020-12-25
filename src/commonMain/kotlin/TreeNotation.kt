@@ -1,3 +1,5 @@
+package tl.jake.ktree
+
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
@@ -90,7 +92,7 @@ sealed class Tree {
                 postfix = "\n$spaces]"
             ) { it.recursiveToString(indent + 1) }
         }
-        return when(this) {
+        return when (this) {
             is Root -> "${spaces}Tree.Root(children=$c)"
             is Node -> "${spaces}Tree.Node(indent=$indent, cells=$cells, children=$c)"
         }
@@ -142,7 +144,7 @@ sealed class Tree {
 
         var typeCell: String?
             get() = cells.firstOrNull()
-            set(value) = when(value) {
+            set(value) = when (value) {
                 null -> cells.clear()
                 else -> cells[0] = value
             }

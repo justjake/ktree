@@ -1,5 +1,7 @@
+package tl.jake.ktree
+
 import kotlinx.serialization.json.Json
-import serialize.*
+import tl.jake.ktree.serialize.*
 import kotlin.test.Test
 
 class SerializableTreeTests {

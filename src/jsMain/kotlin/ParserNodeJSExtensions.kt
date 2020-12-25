@@ -1,4 +1,6 @@
-import nodeFS.readFile
+package tl.jake.ktree
+
+import tl.jake.ktree.nodeFS.readFile
 import kotlin.js.Promise
 
 /**

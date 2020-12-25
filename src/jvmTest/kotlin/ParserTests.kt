@@ -1,3 +1,5 @@
+package tl.jake.ktree
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -72,9 +74,11 @@ class ParserTests {
 
     @Test
     fun testLexTwoSpaces() {
-        val parser = Parser(useSpaces.copy(
-            edgeSymbol = "  "
-        ))
+        val parser = Parser(
+            useSpaces.copy(
+                edgeSymbol = "  "
+            )
+        )
         val dummyPos = Position(0, 0, 0)
         val dummySpan = Span(dummyPos, dummyPos)
         val tokens = parser.lex("human Jake\n  favorite food tofu\n")
@@ -159,7 +163,11 @@ class ParserTests {
         file.nodes.forEachIndexed { index, treeNode ->
             val expectedTreeNode = expectedFile.nodes[index]
             assertEquals(expectedTreeNode.indent, treeNode.indent, "[$index]: indent equal")
-            assertEquals(expectedTreeNode.edgeTokens, treeNode.edgeTokens, "[$index]: edge tokens equal")
+            assertEquals(
+                expectedTreeNode.edgeTokens,
+                treeNode.edgeTokens,
+                "[$index]: edge tokens equal"
+            )
             assertEquals(expectedTreeNode.words, treeNode.words, "[$index]: words equal")
         }
     }
@@ -208,6 +216,7 @@ class ParserTests {
               id com.example.bad
               version 2.0
         """.trimIndent()
+
         fun assertHasOverindentedWarning(node: Tree.Node, parent: Tree, msg: String) {
             assertEquals(node.warnings.size, 1, "$msg: has one warning")
             val warning = node.warnings.first()
@@ -249,7 +258,8 @@ class ParserTests {
               id com.example.bad
               version 2.0
         """.trimIndent()
-        val notation = TreeNotation.Spaces.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings)
+        val notation =
+            TreeNotation.Spaces.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings)
         val tree = notation.parse(text)
         val expected = TreeBuilder.build {
             node("package") {
@@ -267,7 +277,10 @@ class ParserTests {
               id com.example.bad
               version 2.0
         """.trimIndent()
-        val tree = Parser(useSpaces.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)).parse(text)
+        val tree =
+            Parser(useSpaces.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)).parse(
+                text
+            )
         val expected = TreeBuilder.build {
             node("package") {
                 node("", "id", "com.example.bad") {

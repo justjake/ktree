@@ -2,15 +2,14 @@
 
 Kotlin Multiplatorm implementation of [Tree Notation](https://treenotation.org/).
 
-Tree Notation specifies a very simple language for indented parsing text into a
-tree data structure. Here's an example of a tree written in Tree Notation:
+Tree Notation specifies a very simple language for indented parsing text into a tree data structure.
+Here's an example of a tree written in Tree Notation:
 
 ```
 $KTREE
 ```
 
-With the appropriate notation parser settings, this text parses into the
-following tree structure:
+With the appropriate notation parser settings, this text parses into the following tree structure:
 
 ```
 $KTREE_OUTLINE
@@ -30,18 +29,17 @@ $KTREE_JSON
 Experimental. Outstanding TODOs:
 
 - [ ] Figure out if I need to put `package ktree` at the top of every file
-- [ ] JVM (Maven? Bintray?) build and release.
-  Apparently, things are more difficult in java-land than being the first person to
-  `npm publish` with your package name in package.json. This is sad.
-  So far, my research points to:
-  - https://stackoverflow.com/questions/28846802/how-to-manually-publish-jar-to-maven-central
-  - https://central.sonatype.org/pages/ossrh-guide.html
-  - https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:repositories
-  - [x] Open JIRA ticket https://issues.sonatype.org/browse/OSSRH-62956
+- [ ] JVM (Maven? Bintray?) build and release. Apparently, things are more difficult in java-land
+  than being the first person to
+  `npm publish` with your package name in package.json. This is sad. So far, my research points to:
+    - https://stackoverflow.com/questions/28846802/how-to-manually-publish-jar-to-maven-central
+    - https://central.sonatype.org/pages/ossrh-guide.html
+    - https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:repositories
+    - [x] Open JIRA ticket https://issues.sonatype.org/browse/OSSRH-62956
 - [ ] NPM build and release.
 
-This project intends to target all of Kotlin's supported platforms eventually.
-For now, multiplatform kotlin projects are alpha status, so don't expect too much.
+This project intends to target all of Kotlin's supported platforms eventually. For now,
+multiplatform kotlin projects are alpha status, so don't expect too much.
 
 Platform feature support:
 
@@ -79,9 +77,8 @@ data class TreeNotation(
 
 ### Nodes
 
-Each line (by default) in the file is a *node* in the tree.
-The text in a node is split into cells. The children of a node are the lines underneath a node that
-are indented by one tab.
+Each line (by default) in the file is a *node* in the tree. The text in a node is split into cells.
+The children of a node are the lines underneath a node that are indented by one tab.
 
 The example below contains a parent node `author` with two child nodes:
 
@@ -90,8 +87,8 @@ $AUTHOR
 ```
 
 Tree notation is canonically serialized to JSON as objects with `cells: String[]`
-and `children: Node[]` properties, which are omitted when empty. This serialization should
-make the result of parsing clear:
+and `children: Node[]` properties, which are omitted when empty. This serialization should make the
+result of parsing clear:
 
 ```json
 $AUTHOR_JSON
@@ -99,8 +96,8 @@ $AUTHOR_JSON
 
 ### Indentation
 
-The official Tree Notation spec is ambiguous about how to handle over-indented
-child nodes. `ktree` allows configuring this behavior.
+The official Tree Notation spec is ambiguous about how to handle over-indented child nodes. `ktree`
+allows configuring this behavior.
 
 #### Strict Indentation
 
@@ -109,10 +106,10 @@ TreeNotation() // default
 TreeNotation(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)
 ```
 
-In strict mode (the default), we only parse one additional indentation level for a node.
-The remaining edge symbols are treated as part of the first cell, or as cell seperators.
-This has the consiquence that similarly-over-indented nodes that visually appear to be
-siblings will be parsed as parent-child instead.
+In strict mode (the default), we only parse one additional indentation level for a node. The
+remaining edge symbols are treated as part of the first cell, or as cell seperators. This has the
+consiquence that similarly-over-indented nodes that visually appear to be siblings will be parsed as
+parent-child instead.
 
 ```
 $OVERINDENTED
@@ -132,8 +129,6 @@ $OVERINDENTED_STRICT_JSON
 ```
 
 </details>
-
-
 
 #### Equally indented children are siblings
 

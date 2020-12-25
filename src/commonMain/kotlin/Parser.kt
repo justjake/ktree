@@ -1,3 +1,5 @@
+package tl.jake.ktree
+
 /**
  * Parse tree notion.
  */
@@ -52,7 +54,8 @@ class Parser(val notation: TreeNotation) {
                 listOf((edgeSymbol ?: "").repeat(overindent))
             }
 
-            val words: MutableList<String> = (overindentWords + node.words.map { it.content }).toMutableList()
+            val words: MutableList<String> =
+                (overindentWords + node.words.map { it.content }).toMutableList()
             val indent = node.indent
             val child = Tree.Node(parent = parent(), astNode = node, indent = indent, cells = words)
 
@@ -185,7 +188,7 @@ class Parser(val notation: TreeNotation) {
                     Token.Type.Text -> incrementWord()
                     Token.Type.WordBreak -> finishWord()
                     Token.Type.WordBreakOrEdge -> if (inWords()) finishWord()
-                        else parseEdge()
+                    else parseEdge()
                     Token.Type.NodeBreak -> finishNode()
                 }
             }

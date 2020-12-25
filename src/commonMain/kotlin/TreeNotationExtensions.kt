@@ -1,3 +1,5 @@
+package tl.jake.ktree
+
 fun TreeNotation.parser() = Parser(this)
 
 fun TreeNotation.parse(text: String, filename: String = "<memory>") =

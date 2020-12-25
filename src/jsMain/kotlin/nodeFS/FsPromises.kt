@@ -2,7 +2,7 @@
 @file:JsNonModule
 @file:JsQualifier("promises")
 
-package nodeFS
+package tl.jake.ktree.nodeFS
 
 import kotlin.js.Promise
 

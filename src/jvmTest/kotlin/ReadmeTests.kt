@@ -1,6 +1,8 @@
+package tl.jake.ktree
+
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import serialize.toJson
+import tl.jake.ktree.serialize.toJson
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
@@ -9,11 +11,14 @@ import kotlin.test.assertNotEquals
 class ReadmeTests {
     private fun readResource(name: String) =
         javaClass.classLoader.getResourceAsStream(name)
+
     private val variableRegex = Regex("\\$([\\w_]+)")
 
     private val notation = TreeNotation.Spaces
     private fun parse(s: String) = notation.parse(s)
-    private fun parseEqual(s: String) = notation.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings).parse(s)
+    private fun parseEqual(s: String) =
+        notation.copy(overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings)
+            .parse(s)
 
     private val json = Json {
         prettyPrint = true
