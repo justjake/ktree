@@ -28,7 +28,8 @@ $KTREE_JSON
 
 Experimental. Outstanding TODOs:
 
-- [ ] Figure out if I need to put `package ktree` at the top of every file
+- [x] Figure out if I need to put `package ktree` at the top of every file
+    - Added `package tl.jake.ktree`
 - [ ] JVM (Maven? Bintray?) build and release. Apparently, things are more difficult in java-land
   than being the first person to
   `npm publish` with your package name in package.json. This is sad. So far, my research points to:
@@ -36,6 +37,7 @@ Experimental. Outstanding TODOs:
     - https://central.sonatype.org/pages/ossrh-guide.html
     - https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:repositories
     - [x] Open JIRA ticket https://issues.sonatype.org/browse/OSSRH-62956
+    - [x] Create redirect at https://ktree.jake.tl -> https://www.github.com/justjake/ktree
 - [ ] NPM build and release.
 
 This project intends to target all of Kotlin's supported platforms eventually. For now,
