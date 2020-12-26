@@ -8,15 +8,24 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up JDK 15
         uses: actions/setup-java@v1
         with:
           java-version: 15
+
       - name: Cache Gradle packages
         uses: actions/cache@v2
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: ${{ runner.os }}-gradle
+
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Run JVM CLI
+        run: ./gradlew runJvmJar
+
+      - name: Run Native CLI
+        run: ./gradlew runKtreeReleaseExecutableNative
