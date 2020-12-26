@@ -116,6 +116,9 @@ Experimental. Outstanding TODOs:
     - https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:repositories
     - [x] Open JIRA ticket https://issues.sonatype.org/browse/OSSRH-62956
     - [x] Create redirect at https://ktree.jake.tl -> https://www.github.com/justjake/ktree
+    - [x] OSSRH repo created.
+    - [ ] push first build to OSSRH
+    - [ ] sync OSSRH to maven central
 - [ ] NPM build and release.
 
 This project intends to target all of Kotlin's supported platforms eventually. For now,
