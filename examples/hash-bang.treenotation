@@ -1,0 +1,4 @@
+#! ktree { edgeSymbol: " " }
+This tree notation file should print itself to json
+ when it is executed or fed into the ktree interpreter
+  indented x 3

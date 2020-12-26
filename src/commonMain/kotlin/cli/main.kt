@@ -13,14 +13,18 @@ import tl.jake.ktree.serialize.toJson
  */
 fun main(args: Array<String>) {
     when (args.size) {
-        0 -> jsonEncodeFile(TreeNotation(), InputFile("STDIN", readStdin()))
-        1 -> jsonEncodeFile(TreeNotation(), InputFile(args[0], readFile(args[0])))
+        0 -> jsonEncodeFile(null, InputFile("STDIN", readStdin()))
+        1 -> jsonEncodeFile(null, InputFile(args[0], readFile(args[0])))
         2 -> jsonEncodeFile(Json.decodeFromString(args[0]), InputFile(args[1], readFile(args[1])))
     }
 }
 
-fun jsonEncodeFile(notation: TreeNotation, inputFile: InputFile) {
-    val tree = notation.parse(inputFile.content, inputFile.filename)
+fun jsonEncodeFile(notation: TreeNotation?, inputFile: InputFile) {
+    val (notation, content) = when (notation) {
+        null -> TreeNotation.parseFromHashBang(inputFile.content) ?: Pair(TreeNotation(), inputFile.content)
+        else -> Pair(notation, inputFile.content)
+    }
+    val tree = notation.parse(content, inputFile.filename)
     writeOut(tree.toJson(Json { prettyPrint = true }) + "\n")
     tree.allWarnings().forEach { warning ->
         writeError("ktree: ${warning.toString()}\n")

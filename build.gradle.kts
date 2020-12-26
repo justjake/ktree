@@ -10,7 +10,7 @@ val entryPackage = "tl.jake.ktree.cli"
 
 object RunTaskConfig {
     val stdin = "".byteInputStream()
-    val args = arrayOf("examples/overindented.tsv")
+    val args = arrayOf("examples/hash-bang.treenotation")
 }
 
 repositories {

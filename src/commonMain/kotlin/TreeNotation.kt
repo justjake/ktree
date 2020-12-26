@@ -1,6 +1,7 @@
 package tl.jake.ktree
 
 import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
 
 
 /**
@@ -35,7 +36,7 @@ data class TreeNotation(
     /**
      * How over-indentation is handled by the parser.
      */
-    val overIndentBehavior: OverIndentBehavior = OverIndentBehavior.Strict
+    val overIndentBehavior: OverIndentBehavior = OverIndentBehavior.Strict,
 ) {
     @Serializable
     enum class OverIndentBehavior {
@@ -48,9 +49,10 @@ data class TreeNotation(
 
     init {
         if (nodeBreakSymbol == wordBreakSymbol || nodeBreakSymbol == edgeSymbol) {
-            throw IllegalArgumentException("nodeBreakSymbol must be distict from other symbols")
+            throw IllegalArgumentException("nodeBreakSymbol must be distinct from other symbols")
         }
     }
+
 
     companion object {
         /** One-space to indent and to separate words */
@@ -67,6 +69,26 @@ data class TreeNotation(
 
         /** Grid notation - no nesting, very similar to TSV. */
         val GridNotation = TreeNotation(edgeSymbol = null)
+
+        private fun String.escaped() = Json.encodeToString(this)
+
+        fun parseFromHashBang(data: String): Pair<TreeNotation, String>? {
+            val ShebangRegex = Regex("""^#!\s*(\w+)(\s+(.*))?$""")
+            val lines = data.lines()
+            val match = ShebangRegex.find(lines.first()) ?: return null
+            val args = if (match.groups.size > 2) match.groups[2]!!.value else ""
+            val notation = Json { isLenient = true }.decodeFromString<TreeNotation>(args)
+            val newContent = lines.subList(1, lines.size).joinToString("\n")
+            println(notation)
+            println(newContent.escaped())
+            return Pair(notation, newContent)
+        }
+    }
+
+    private fun String.escaped() = Json.encodeToString(this)
+
+    override fun toString(): String {
+        return "TreeNotation(nodeBreakSymbol=${nodeBreakSymbol.escaped()}, wordBreakSymbol=${wordBreakSymbol.escaped()}, edgeSymbol=${edgeSymbol?.escaped()}, lineBreak=${lineBreak.escaped()}, overIndentBehavior=$overIndentBehavior)"
     }
 }
 
