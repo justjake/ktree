@@ -43,11 +43,14 @@ kotlin {
                 manifest {
                     attributes["Main-Class"] = "$entryPackage.MainKt"
                 }
+
+                // TODO: is this needed?
                 from(configurations.getByName("runtimeClasspath").map { if (it.isDirectory) it else zipTree(it) })
             }
         }
 
         val runJvmJar by tasks.creating(JavaExec::class) {
+            description = "Run the JVM jar main class"
             dependsOn(jvmJar)
             group = "run"
             main = "-jar"
