@@ -21,7 +21,7 @@ class TestData {
     }
 }
 
-class TransformsTests {
+class TreeExtensionTests {
     fun dummyNode() = NodeBuilder.build()
 
     @Test

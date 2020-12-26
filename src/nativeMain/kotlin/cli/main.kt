@@ -7,7 +7,6 @@ import kotlinx.cinterop.toKString
 import platform.posix.*
 
 
-// https://www.nequalsonelifestyle.com/2020/11/16/kotlin-native-file-io/
 actual fun readFile(filename: String): String {
     val returnBuffer = StringBuilder()
     val file =

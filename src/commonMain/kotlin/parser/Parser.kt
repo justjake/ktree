@@ -1,4 +1,7 @@
-package tl.jake.ktree
+package tl.jake.ktree.parser
+
+import tl.jake.ktree.Tree
+import tl.jake.ktree.TreeNotation
 
 /**
  * Parse tree notion.
@@ -12,7 +15,7 @@ class Parser(val notation: TreeNotation) {
     /**
      * Tokenize text
      */
-    fun lex(text: String): List<Token> = Lexer(text).lex()
+    fun lex(text: String, startIndex: Int = 0): List<Token> = Lexer(text, startIndex).lex()
 
     /**
      * Convert tokens into an AST
@@ -22,7 +25,7 @@ class Parser(val notation: TreeNotation) {
     /**
      * Convert an AST into a Tree
      */
-    fun tree(ast: AST.File): Tree.Root {
+    fun tree(ast: AST.FileNode): Tree.Root {
         val root = Tree.Root(ast)
         val stack = mutableListOf<Tree>(root)
 
@@ -57,7 +60,7 @@ class Parser(val notation: TreeNotation) {
             }
 
             val words: MutableList<String> =
-                (overindentWords + node.words.map { it.content }).toMutableList()
+                (overindentWords + node.cellNodes.map { it.content }).toMutableList()
             val indent = node.indent
             val child = Tree.Node(parent = parent(), astNode = node, indent = indent, cells = words)
 
@@ -94,9 +97,9 @@ class Parser(val notation: TreeNotation) {
     /**
      * Parse an InputFile's content into a Tree.
      */
-    fun parse(text: String, filename: String = "<Memory>"): Tree.Root {
+    fun parse(text: String, filename: String = "<Memory>", startIndex: Int = 0): Tree.Root {
         val inputFile = InputFile(filename = filename, content = text)
-        val tokens = lex(inputFile.content)
+        val tokens = lex(inputFile.content, startIndex)
         val root = ast(inputFile, tokens)
         return tree(root)
     }
@@ -107,11 +110,11 @@ class Parser(val notation: TreeNotation) {
     private inner class TokenParser(val inputFile: InputFile, val tokens: List<Token>) {
         val nodes = mutableListOf<AST.TreeNode>()
 
-        fun parse(): AST.File {
+        fun parse(): AST.FileNode {
             // Node parsing
             var nodeStart: Position? = null
             var edgeCount = 0
-            var words = mutableListOf<AST.Word>()
+            var words = mutableListOf<AST.CellNode>()
             var nodeTokens = mutableListOf<Token>()
 
             // Word parsing
@@ -143,7 +146,7 @@ class Parser(val notation: TreeNotation) {
                 fun inWords() = words.isNotEmpty() || wordTokens.isNotEmpty() || wordStart != null
 
                 fun finishWord() {
-                    val word = AST.Word(
+                    val word = AST.CellNode(
                         span = Span(wordStart ?: token.span.start, token.span.start),
                         tokens = wordTokens,
                         content = wordTokens.joinToString("") { it.string }
@@ -175,7 +178,7 @@ class Parser(val notation: TreeNotation) {
                         ),
                         indent = edgeCount,
                         edgeTokens = nodeTokens,
-                        words = words
+                        cellNodes = words
                     )
                     nodes.add(node)
 
@@ -200,7 +203,7 @@ class Parser(val notation: TreeNotation) {
             } else {
                 Span(tokens.first().span.start, tokens.last().span.end)
             }
-            return AST.File(
+            return AST.FileNode(
                 span = span,
                 nodes = nodes,
                 raw = inputFile,
@@ -211,9 +214,13 @@ class Parser(val notation: TreeNotation) {
     /**
      * Transforms an input string into tokens.
      */
-    private inner class Lexer(val input: String) {
+    private inner class Lexer(val input: String, startIndex: Int) {
         val tokens = mutableListOf<Token>()
         val scanner = Scanner(input)
+
+        init {
+            scanner.index = startIndex
+        }
 
         fun lex(): List<Token> {
             val wordBreakTokenType =
@@ -311,7 +318,7 @@ class Scanner(val input: String, var index: Int = 0) {
 }
 
 
-data class InputFile(val filename: String, val content: String)
+data class InputFile(val filename: String, val content: String, val startIndex: Int = 0)
 data class Position(val index: Int, val line: Int, val column: Int)
 data class Span(val start: Position, val end: Position)
 data class Token(val type: Type, val string: String, val span: Span) {
@@ -327,7 +334,7 @@ data class Token(val type: Type, val string: String, val span: Span) {
 sealed class AST {
     abstract val span: Span
 
-    data class Word(
+    data class CellNode(
         override val span: Span,
         val tokens: List<Token>,
         val content: String,
@@ -337,10 +344,10 @@ sealed class AST {
         override val span: Span,
         val indent: Int,
         val edgeTokens: List<Token>,
-        val words: List<Word>
+        val cellNodes: List<CellNode>
     ) : AST()
 
-    data class File(
+    data class FileNode(
         override val span: Span,
         val nodes: List<TreeNode>,
         val raw: InputFile

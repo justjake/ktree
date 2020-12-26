@@ -1,6 +1,7 @@
 package tl.jake.ktree
 
 import tl.jake.ktree.nodeFS.readFile
+import tl.jake.ktree.parser.Parser
 import kotlin.js.Promise
 
 /**

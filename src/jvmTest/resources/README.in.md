@@ -109,6 +109,7 @@ allows configuring this behavior.
 
 ```kotlin
 import tl.jake.ktree.TreeNotation
+
 TreeNotation() // default
 TreeNotation(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)
 ```
@@ -141,6 +142,7 @@ $OVERINDENTED_STRICT_JSON
 
 ```kotlin
 import tl.jake.ktree.TreeNotation
+
 TreeNotation(
     overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings
 )

@@ -1,6 +1,6 @@
 package tl.jake.ktree
 
-import java.io.File
+import tl.jake.ktree.parser.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -123,7 +123,7 @@ class ParserTests {
             Token(Token.Type.NodeBreak, "\n", dummySpan),
         )
         val inputFile = InputFile("test", "")
-        val expectedFile = AST.File(
+        val expectedFile = AST.FileNode(
             span = dummySpan,
             raw = inputFile,
             nodes = listOf(
@@ -132,13 +132,13 @@ class ParserTests {
                     span = dummySpan,
                     indent = 0,
                     edgeTokens = listOf(),
-                    words = listOf(
-                        AST.Word(
+                    cellNodes = listOf(
+                        AST.CellNode(
                             dummySpan,
                             listOf(tokens[0]),
                             tokens[0].string
                         ),
-                        AST.Word(
+                        AST.CellNode(
                             dummySpan,
                             listOf(tokens[2]),
                             tokens[2].string,
@@ -150,10 +150,10 @@ class ParserTests {
                     span = dummySpan,
                     indent = 1,
                     edgeTokens = listOf(tokens[4]),
-                    words = listOf(
-                        AST.Word(dummySpan, listOf(tokens[5]), tokens[5].string),
-                        AST.Word(dummySpan, listOf(tokens[7]), tokens[7].string),
-                        AST.Word(dummySpan, listOf(tokens[9]), tokens[9].string),
+                    cellNodes = listOf(
+                        AST.CellNode(dummySpan, listOf(tokens[5]), tokens[5].string),
+                        AST.CellNode(dummySpan, listOf(tokens[7]), tokens[7].string),
+                        AST.CellNode(dummySpan, listOf(tokens[9]), tokens[9].string),
                     )
                 )
             )
@@ -169,7 +169,7 @@ class ParserTests {
                 treeNode.edgeTokens,
                 "[$index]: edge tokens equal"
             )
-            assertEquals(expectedTreeNode.words, treeNode.words, "[$index]: words equal")
+            assertEquals(expectedTreeNode.cellNodes, treeNode.cellNodes, "[$index]: words equal")
         }
     }
 

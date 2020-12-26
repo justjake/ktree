@@ -69,18 +69,6 @@ data class TreeNotation(
 
         /** Grid notation - no nesting, very similar to TSV. */
         val GridNotation = TreeNotation(edgeSymbol = null)
-
-        private fun String.escaped() = Json.encodeToString(this)
-
-        fun parseFromHashBang(data: String): Pair<TreeNotation, String>? {
-            val ShebangRegex = Regex("""^#!\s*(\w+)(\s+(.*))?$""")
-            val lines = data.lines()
-            val match = ShebangRegex.find(lines.first()) ?: return null
-            val args = if (match.groups.size > 2) match.groups[2]!!.value else ""
-            val notation = Json { isLenient = true }.decodeFromString<TreeNotation>(args)
-            val newContent = lines.subList(1, lines.size).joinToString("\n")
-            return Pair(notation, newContent)
-        }
     }
 
     private fun String.escaped() = Json.encodeToString(this)

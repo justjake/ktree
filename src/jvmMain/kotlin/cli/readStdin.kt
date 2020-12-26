@@ -2,12 +2,12 @@ package tl.jake.ktree.cli
 
 import java.io.File
 
-actual fun readStdin(): String {
-    return System.`in`.readAllBytes().decodeToString()
-}
-
 actual fun readFile(filename: String): String {
     return File(filename).readText()
+}
+
+actual fun readStdin(): String {
+    return System.`in`.readAllBytes().decodeToString()
 }
 
 actual fun writeOut(data: String) {
