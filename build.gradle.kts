@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.cli.jvm.compiler.findMainClass
-
 plugins {
     kotlin("multiplatform") version "1.4.10"
     kotlin("plugin.serialization") version "1.4.10"
@@ -7,8 +5,13 @@ plugins {
 }
 
 group = "tl.jake.ktree"
-version = "0.0-SNAPSHOT"
+version = "0.0.0-SNAPSHOT"
 val entryPackage = "tl.jake.ktree.cli"
+
+object RunTaskConfig {
+    val stdin = "".byteInputStream()
+    val args = arrayOf("examples/overindented.tsv")
+}
 
 repositories {
     mavenCentral()
@@ -30,7 +33,11 @@ kotlin {
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
         }
+
+        // TODO: is this needed?
         withJava()
+
+        // Create a JVM jar
         val jvmJar by tasks.getting(org.gradle.jvm.tasks.Jar::class) {
             doFirst {
                 manifest {
@@ -38,6 +45,14 @@ kotlin {
                 }
                 from(configurations.getByName("runtimeClasspath").map { if (it.isDirectory) it else zipTree(it) })
             }
+        }
+
+        val runJvmJar by tasks.creating(JavaExec::class) {
+            dependsOn(jvmJar)
+            group = "run"
+            main = "-jar"
+            args(jvmJar.archiveFile.get(), *RunTaskConfig.args)
+            standardInput = RunTaskConfig.stdin
         }
     }
     js(IR) {
@@ -62,11 +77,10 @@ kotlin {
     nativeTarget.binaries {
         executable("ktree") {
             entryPoint = "$entryPackage.main"
-            runTask?.standardInput = """
-                example overindent
-                ${"\t\t"}child 1
-                ${"\t\t"}child 2
-            """.trimIndent().byteInputStream()
+            runTask?.run {
+                standardInput = RunTaskConfig.stdin
+                args(*RunTaskConfig.args)
+            }
         }
     }
 

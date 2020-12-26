@@ -23,7 +23,7 @@ fun jsonEncodeFile(notation: TreeNotation, inputFile: InputFile) {
     val tree = notation.parse(inputFile.content, inputFile.filename)
     writeOut(tree.toJson(Json { prettyPrint = true }) + "\n")
     tree.allWarnings().forEach { warning ->
-        writeError(warning.toString() + "\n")
+        writeError("ktree: ${warning.toString()}\n")
     }
 }
 

@@ -353,5 +353,11 @@ sealed class Warning {
         val indent: Int,
         val parentSpan: Span,
         val parentIndent: Int,
-    ) : Warning()
+    ) : Warning() {
+        override fun toString(): String {
+            return """
+               Warning[${span.end.line}:${span.end.column}] Child node may be over-indented.
+            """.trimIndent()
+        }
+    }
 }
