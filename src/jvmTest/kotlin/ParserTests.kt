@@ -1,5 +1,6 @@
 package tl.jake.ktree
 
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -290,5 +291,23 @@ class ParserTests {
         print(treeToString(tree))
         print(treeToString(expected))
         assertTreesHaveSameContent(expected, tree)
+    }
+
+    @Test
+    fun `test edge character as space`() {
+        val notation = TreeNotation(edgeSymbol = " ")
+        val text = """
+This tree notation file should print itself to json
+ when it is executed or fed into the ktree interpreter
+  indented x 3
+        """.trimIndent()
+        val expected = TreeBuilder.build {
+            node("This tree notation file should print itself to json") {
+                node("when it is executed or fed into the ktree interpreter") {
+                    node("indented x 3")
+                }
+            }
+        }
+        assertTreesHaveSameContent(expected, notation.parse(text))
     }
 }

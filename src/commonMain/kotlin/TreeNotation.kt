@@ -79,8 +79,6 @@ data class TreeNotation(
             val args = if (match.groups.size > 2) match.groups[2]!!.value else ""
             val notation = Json { isLenient = true }.decodeFromString<TreeNotation>(args)
             val newContent = lines.subList(1, lines.size).joinToString("\n")
-            println(notation)
-            println(newContent.escaped())
             return Pair(notation, newContent)
         }
     }

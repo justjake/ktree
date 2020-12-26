@@ -48,10 +48,12 @@ class Parser(val notation: TreeNotation) {
             //      Overindented word1 word2
             //  ~~~~ (this is overindented)
             val overindent = node.indent - depth()
-            val overindentWords = if (edgeSymbol == wordBreakSymbol) {
-                (0 until overindent).map { "" }
-            } else {
-                listOf((edgeSymbol ?: "").repeat(overindent))
+            val overindentWords: List<String> = when {
+                overindent == 0 -> listOf()
+                // Produce empty words equal to the extra edge symbols
+                edgeSymbol == wordBreakSymbol -> (0 until overindent).map { "" }
+                // Produce a single word containg all the extra edge symbols
+                else -> listOf((edgeSymbol ?: "").repeat(overindent))
             }
 
             val words: MutableList<String> =
