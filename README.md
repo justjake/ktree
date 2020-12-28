@@ -103,7 +103,9 @@ With the appropriate notation parser settings, this text parses into the followi
 
 ## Project Status
 
-Experimental. Outstanding TODOs:
+Experimental. All features probably contain significant bugs.
+
+Outstanding TODOs:
 
 - [x] Figure out if I need to put `package ktree` at the top of every file
     - [x] Added `package tl.jake.ktree`, etc, to every file
@@ -119,6 +121,10 @@ Experimental. Outstanding TODOs:
     - [ ] push first build to OSSRH
     - [ ] sync OSSRH to maven central
 - [ ] NPM build and release.
+- [ ] Serialization / encoding / decoding
+  - [x] First draft
+  - [ ] Polymorphic serialization
+  - [ ] `@Inline` annotation
 
 This project intends to target all of Kotlin's supported platforms eventually. For now,
 multiplatform kotlin projects are alpha status, so don't expect too much.
@@ -400,8 +406,11 @@ import tl.jake.ktree.TreeNotation
 import tl.jake.ktree.serialization.decodeFromTree
 
 val tree = TreeNotation.Spaces.parse(example)
-val pkg = decodeFromTree<Package>(tree)
+val pkg = decodeFromTree<PackageSpec>(tree)
 println(pkg.prettyToString())
+```
+
+```
 // PackageSpec(
 //     name=ktree,
 //     author=Author(
