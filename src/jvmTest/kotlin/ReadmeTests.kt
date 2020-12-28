@@ -1,7 +1,11 @@
 package tl.jake.ktree
 
+import Author
+import Dependency
+import PackageSpec
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import tl.jake.ktree.serialization.decodeFromTree
 import tl.jake.ktree.serialize.toJson
 import java.io.File
 import kotlin.test.Test
@@ -33,10 +37,25 @@ author
  email jake@example.com
 
 dependencies
- multiplatform >= 2
+ multiplatform >=2
   resolved https://example.com/multiplatform
   checksum abcdef1234
     """.trimIndent()
+
+    private val ktreeKotlin = PackageSpec(
+        name = "ktree",
+        author = Author(
+            name = "Jake",
+            email = "jake@example.com"
+        ),
+        dependencies = mapOf(
+            "multiplatform" to Dependency(
+                constraint = ">=2",
+                resolved = "https://example.com/multiplatform",
+                checksum = "abcdef1234"
+            )
+        )
+    )
 
     private val overindented = """
 parent
@@ -67,6 +86,14 @@ parent
                 "OVERINDENTED_STRICT_JSON" -> parse(overindented).toJson(json)
                 "OVERINDENTED_EQUAL_OUTLINE" -> parseEqual(overindented).toOutline()
                 "OVERINDENTED_EQUAL_JSON" -> parseEqual(overindented).toJson(json)
+                "KTREE_KOTLIN" -> readResource("ReadMePackage.kt.example")!!.readAllBytes().decodeToString()
+                "KTREE_KOTLIN_STRING" -> {
+                    // TODO: make this work
+//                    val tree = TreeNotation.Spaces.parse(example)
+//                    val pkg = decodeFromTree<PackageSpec>(tree)
+//                    pkg.toString()
+                    ktreeKotlin.prettyToString().lines().joinToString("\n") { "// $it" }
+                }
                 else -> throw Error("Unknown replacement var: $varname")
             }
         }

@@ -13,7 +13,7 @@ author
  email jake@example.com
 
 dependencies
- multiplatform >= 2
+ multiplatform >=2
   resolved https://example.com/multiplatform
   checksum abcdef1234
 ```
@@ -28,7 +28,7 @@ With the appropriate notation parser settings, this text parses into the followi
 │  └─ 1. [email, jake@example.com]
 ├─ 3. []
 └─ 4. [dependencies]
-   └─ 0. [multiplatform, >=, 2]
+   └─ 0. [multiplatform, >=2]
       ├─ 0. [resolved, https://example.com/multiplatform]
       └─ 1. [checksum, abcdef1234]
 ```
@@ -76,8 +76,7 @@ With the appropriate notation parser settings, this text parses into the followi
         {
           "cells": [
             "multiplatform",
-            ">=",
-            "2"
+            ">=2"
           ],
           "children": [
             {
@@ -207,6 +206,7 @@ allows configuring this behavior.
 
 ```kotlin
 import tl.jake.ktree.TreeNotation
+
 TreeNotation() // default
 TreeNotation(overIndentBehavior = TreeNotation.OverIndentBehavior.Strict)
 ```
@@ -287,6 +287,7 @@ parses to
 
 ```kotlin
 import tl.jake.ktree.TreeNotation
+
 TreeNotation(
     overIndentBehavior = TreeNotation.OverIndentBehavior.EquallyIndentedChildrenAreSiblings
 )
@@ -362,3 +363,57 @@ parses to
 ```
 
 </details>
+
+
+## Serialization
+
+`ktree` provides [`kotlinx.serialization`][kserial] encoders and decoders that allow you to convert
+Kotlin data structures to and from a Tree Notation representation.
+
+For example, we can use the following Kotlin classes to decode the first example in a type-safe
+manner.
+
+[kserial]: https://github.com/Kotlin/kotlinx.serialization
+
+```kotlin
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import tl.jake.ktree.serialization.Inline
+
+@Serializable data class PackageSpec(
+    @SerialName("package") val name: String,
+    val author: Author,
+    val dependencies: Map<String, Dependency>,
+)
+@Serializable data class Author(val name: String, val email: String)
+@Serializable data class Dependency(
+    @Inline val constraint: String,
+    val resolved: String? = null,
+    val checksum: String? = null,
+)
+```
+
+To decode Tree Notation as a `Package` instance, call `<T> decodeFromTree`:
+
+```kotlin
+import tl.jake.ktree.TreeNotation
+import tl.jake.ktree.serialization.decodeFromTree
+
+val tree = TreeNotation.Spaces.parse(example)
+val pkg = decodeFromTree<Package>(tree)
+println(pkg.prettyToString())
+// PackageSpec(
+//     name=ktree,
+//     author=Author(
+//         name=Jake,
+//         email=jake@example.com
+//     ),
+//     dependencies={
+//         multiplatform=Dependency(
+//             constraint=>=2,
+//             resolved=https://example.com/multiplatform,
+//             checksum=abcdef1234
+//         )
+//     }
+// )
+```

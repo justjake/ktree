@@ -153,6 +153,8 @@ fun <T> decodeFromTree(node: Tree.Node, deserializer: DeserializationStrategy<T>
 
 @ExperimentalSerializationApi
 inline fun <reified T> decodeFromTree(node: Tree.Node): T = decodeFromTree(node, serializer())
+@ExperimentalSerializationApi
+inline fun <reified T> decodeFromTree(node: Tree.Root): T = decodeFromTree(node.toNode(), serializer())
 
 @ExperimentalSerializationApi
 open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {

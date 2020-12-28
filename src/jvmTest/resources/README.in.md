@@ -170,3 +170,30 @@ $OVERINDENTED_EQUAL_JSON
 ```
 
 </details>
+
+
+## Serialization
+
+`ktree` provides [`kotlinx.serialization`][kserial] encoders and decoders that allow you to convert
+Kotlin data structures to and from a Tree Notation representation.
+
+For example, we can use the following Kotlin classes to decode the first example in a type-safe
+manner.
+
+[kserial]: https://github.com/Kotlin/kotlinx.serialization
+
+```kotlin
+$KTREE_KOTLIN
+```
+
+To decode Tree Notation as a `Package` instance, call `<T> decodeFromTree`:
+
+```kotlin
+import tl.jake.ktree.TreeNotation
+import tl.jake.ktree.serialization.decodeFromTree
+
+val tree = TreeNotation.Spaces.parse(example)
+val pkg = decodeFromTree<Package>(tree)
+println(pkg.prettyToString())
+$KTREE_KOTLIN_STRING
+```

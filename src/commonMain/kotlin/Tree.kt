@@ -55,8 +55,15 @@ sealed class Tree {
         override val indent = -1
         override val depth = -1
         override val warnings = mutableListOf<Warning>()
+
         override fun toString(): String {
             return recursiveToString(0)
+        }
+
+        fun toNode(): Node = NodeBuilder.build {
+            this@Root.children.forEach { child ->
+                cloneOf(child)
+            }
         }
     }
 
