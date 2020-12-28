@@ -139,6 +139,8 @@ sealed class Tree {
                 }
             }
         }
+
+        override fun toString(): String = recursiveToString(0)
     }
 
     /**
