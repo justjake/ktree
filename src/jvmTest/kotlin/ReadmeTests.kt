@@ -92,7 +92,7 @@ parent
 //                    val tree = TreeNotation.Spaces.parse(example)
 //                    val pkg = decodeFromTree<PackageSpec>(tree)
 //                    pkg.toString()
-                    ktreeKotlin.prettyToString().lines().joinToString("\n") { "// $it" }
+                    ktreeKotlin.prettyToString()
                 }
                 else -> throw Error("Unknown replacement var: $varname")
             }

@@ -411,18 +411,18 @@ println(pkg.prettyToString())
 ```
 
 ```
-// PackageSpec(
-//     name=ktree,
-//     author=Author(
-//         name=Jake,
-//         email=jake@example.com
-//     ),
-//     dependencies={
-//         multiplatform=Dependency(
-//             constraint=>=2,
-//             resolved=https://example.com/multiplatform,
-//             checksum=abcdef1234
-//         )
-//     }
-// )
+PackageSpec(
+    name=ktree,
+    author=Author(
+        name=Jake,
+        email=jake@example.com
+    ),
+    dependencies={
+        multiplatform=Dependency(
+            constraint=>=2,
+            resolved=https://example.com/multiplatform,
+            checksum=abcdef1234
+        )
+    }
+)
 ```
