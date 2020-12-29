@@ -282,7 +282,9 @@ characters like newlines and tabs are escaped as `\n` and `\t` in output.
 - **TODO**: If a string cell ends with a `\` character, the string continues into the next cell.
   The `\` is removed when decoding and replaced with the `cellBreakSymbol`. 
   
-- Strings that start with a "\" character are encoded with an extra "\" prepended.
+- Strings that start with a `\` character are encoded with an extra `\` prepended. For
+  example, to encode the string `"\ is the worst character"` would encode to cell
+  `\\\ is the worst character`.
   
 Here's an example of encoding a `Team` if all string fields were `@Multiline`.
   
@@ -408,4 +410,18 @@ data class KV<K, V>(
   @Inline @Anonymous val key: K,
   @Inline @Anonymous val value: V,
 )
+```
+
+**Comments** are coded as any node where the first cell contains exactly `//`.
+Comments are ignored when decoding. To encode a node with a first cell containing the string `"//"`,
+prepend the cell with a `\`.
+
+```kotlin
+data class GameState(val scores: Map<String, Int>)
+GameState(mapOf("//" to 5))
+```
+
+```
+scores
+ \// 5
 ```
