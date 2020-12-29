@@ -26,9 +26,9 @@ $KTREE_JSON
 
 ## Project Status
 
-Experimental. All features probably contain significant bugs.
+Experimental. All features probably contain significant bugs and are under heavy development.
 
-Outstanding TODOs:
+Outstanding TODOs before releasing version `0.0.1`:
 
 - [x] Figure out if I need to put `package ktree` at the top of every file
     - [x] Added `package tl.jake.ktree`, etc, to every file
@@ -44,10 +44,13 @@ Outstanding TODOs:
     - [ ] push first build to OSSRH
     - [ ] sync OSSRH to maven central
 - [ ] NPM build and release.
-- [ ] Serialization / encoding / decoding
+- [ ] Serialization / encoding / decoding ("arbito")
   - [x] First draft
   - [ ] Polymorphic serialization
   - [ ] `@Inline` annotation
+  - [ ] Spec work
+  - [x] Pick a name
+    - This is called "arbito"
 
 This project intends to target all of Kotlin's supported platforms eventually. For now,
 multiplatform kotlin projects are alpha status, so don't expect too much.
@@ -178,13 +181,13 @@ $OVERINDENTED_EQUAL_JSON
 </details>
 
 
-## Serialization
+## Serialization Language (`arbito`)
 
 `ktree` provides [`kotlinx.serialization`][kserial] encoders and decoders that allow you to convert
-Kotlin data structures to and from a Tree Notation representation.
+Kotlin data structures to and from a Tree Notation representation. This representation is named
+"arbito", a shortening of "arbolito", which means "little tree" in Spanish.
 
-For example, we can use the following Kotlin classes to decode the first example in a type-safe
-manner.
+We can use the following Kotlin classes to decode the first example in a type-safe manner:
 
 [kserial]: https://github.com/Kotlin/kotlinx.serialization
 
@@ -192,7 +195,7 @@ manner.
 $KTREE_KOTLIN
 ```
 
-To decode Tree Notation as a `Package` instance, call `<T> decodeFromTree`:
+To decode Tree Notation as a `PackageSpec` instance, call `decodeFromTree`:
 
 ```kotlin
 import tl.jake.ktree.TreeNotation
@@ -205,4 +208,204 @@ println(pkg.prettyToString())
 
 ```
 $KTREE_KOTLIN_STRING
+```
+
+### Specification by example
+
+**Classes** values encoded as a node, and its fields are encoded as child nodes inside the node.
+By default, each field is encoded as a child node with the first cell as the field name,
+and the remaining cells and descendants as the field value.
+
+* If a field is annotated `@Inline`, it *may* be encoded as a cell in the value's root node.
+  Inline cells are decoded from the root node in order of declaration.
+  
+* If a field is annotated `@Anonymous`, it *may* be encoded as a child node without the field name.
+  Anonymous fields are decoded in order of declaration. 
+  
+Here's some examples of encoding the following class:
+
+```kotlin
+class Team(val lead: Person)
+class Person(
+  @Inline val name: String,
+  val age: Int,
+  @Anonymous val occupation: String
+)
+```
+
+<table>
+<tr>
+<td>
+
+Compact encoding
+```
+lead Jake
+ age 29
+ Software engineer
+```
+
+</td>
+<td>
+
+Unambiguous encoding
+
+```
+lead
+ name Jake
+ age 29
+ occupation Software engineer
+```
+
+</td>
+</tr>
+</table>
+
+**Primitives** like strings and numbers are typically coded as single cells within a node.
+There are no type sigils to differentiate between the different numeric and string types,
+so the serialization is not entirely self-describing.
+
+**Numeric primitives** are coded as their Kotlin `.toString()` and `String.toType()`
+mirror methods.
+
+**Null** is encoded as a cell containing the string `null`. In cases where this is ambiguous, for
+example a field with type `String?`, a string `"null"` is encoded as `\null`.
+
+**Strings** are coded as JSON strings without the opening or closing quotes. Control
+characters like newlines and tabs are escaped as `\n` and `\t` in output. 
+
+- **TODO** If a string cells contains annotated `@Multiline`, it *may* be encoded as a cell containing
+  `|` and then indented as child nodes. The child nodes will be joined together with newlines
+  and all of their cells joined together with tabs.
+
+  A string containing just a `|` that is not a multiline string is encoded as a cell containing `\|`
+
+- **TODO**: If a string cell ends with a `\` character, the string continues into the next cell.
+  The `\` is removed when decoding and replaced with the `cellBreakSymbol`. 
+  
+- Strings that start with a "\" character are encoded with an extra "\" prepended.
+  
+Here's an example of encoding a `Team` if all string fields were `@Multiline`.
+  
+```
+lead
+ name |
+  Jake
+ age 29
+ occupation |
+  Software engineer
+```
+
+#### Collections
+
+**Lists** are encoded as child nodes inside a parent. List items may be prefixed by a cell
+containing `-`, which is ignored, but makes visual indentation clearer. If an inline cell contains
+just a `-`, it should be written as `\-`.
+
+Examples serializing class `Squad`:
+
+```kotlin
+class Squad(val members: List<Person>)
+```
+
+Default, unambiguous encoding:
+```
+members
+ -
+  name Jake
+  age 29
+  occupation SWE
+ -
+  name Tamago
+  age 33
+  occupation Product Manager
+```
+
+Member fields compacted:
+```
+members
+ - Jake
+  age 29
+  SWE
+ - Tamago
+  age 33
+  Product Manager
+```
+
+Without leading -, but with unambiguous fields. This encoding gives a lot of breathing room to list
+members.
+
+```
+members
+ 
+  name Jake
+  age 29
+  occupation SWE
+  
+  name Tamago
+  age 33
+  occupation Product Manager
+```
+
+Here's the most compact encoding possible. No `-` markers, and all inline and anonymous fields
+compacted.
+
+```
+members
+ Jake
+  age 29
+  SWE
+ Tamago
+  age 33
+  Product Manager
+```
+
+**Maps** have two encodings, depending on the kind of *key* used in the map.
+
+**Maps with primitive keys** are encoded like a class. Each key-value pair is a child node of the
+map. The first cells of the child encodes the key. The remaining cells and children of the node
+encode the value. (As usual, a string containing the cell break character can escape it with \)
+
+```kotlin
+data class GameState(val scores: Map<String, Int>)
+GameState(mapOf("Jake TL" to 5, "Tamago" to 12))
+```
+
+```
+scores
+ Jake\ TL 5
+ Tamago 12
+```
+
+**Maps with complex keys** are encoded like a list of pairs with fields `key` and `value`.
+This encoding is a bummer.
+
+```kotlin
+data class ComplexGameState(val scores: Map<Person, Int>)
+GameState(mapOf(
+  Person("Jake TL", 29, "SWE") to 5,
+  Person("Tamago", 30, "Product manager") to 12,
+))
+```
+
+```
+scores
+ -
+  key Jake\ TL
+   age 29
+   SWE
+  value 12
+ -
+  key Tamago
+   age 30
+   SWE
+  value 12
+```
+
+It may help to think of a map as an encoding of this Kotlin type:
+
+```kotlin
+data class KV<K, V>(
+  @Inline @Anonymous val key: K,
+  @Inline @Anonymous val value: V,
+)
 ```
