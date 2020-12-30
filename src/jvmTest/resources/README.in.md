@@ -260,6 +260,8 @@ lead
 </tr>
 </table>
 
+#### Primitives
+
 **Primitives** like strings and numbers are typically coded as single cells within a node. There are
 no type sigils to differentiate between the different numeric and string types, so the serialization
 is not entirely self-describing.
@@ -273,30 +275,30 @@ example a field with type `String?`, a string `"null"` is encoded as `\null`.
 **Strings** are coded as JSON strings without the opening or closing quotes. Control characters like
 newlines and tabs are escaped as `\n` and `\t` in output.
 
-- **TODO** If a string cells contains annotated `@Multiline`, it *may* be encoded as a cell
+- Strings that start with a `\` character are encoded with an extra `\` prepended. For example, to
+  encode the string `"\ is the worst character"` would encode to cell
+  `\\\ is the worst character`.
+
+- `TODO` If a string cell ends with a `\` character, the string continues into the next cell.
+  The `\` is removed when decoding and replaced with the `cellBreakSymbol`.
+  
+- `TODO` If a string cells contains annotated `@Multiline`, it *may* be encoded as a cell
   containing
   `|` and then indented as child nodes. The child nodes will be joined together with newlines and
   all of their cells joined together with tabs.
 
   A string containing just a `|` that is not a multiline string is encoded as a cell containing `\|`
 
-- **TODO**: If a string cell ends with a `\` character, the string continues into the next cell.
-  The `\` is removed when decoding and replaced with the `cellBreakSymbol`.
+  Here's an example of encoding a `Team` if all string fields were `@Multiline`.
 
-- Strings that start with a `\` character are encoded with an extra `\` prepended. For example, to
-  encode the string `"\ is the worst character"` would encode to cell
-  `\\\ is the worst character`.
-
-Here's an example of encoding a `Team` if all string fields were `@Multiline`.
-
-```
-lead
- name |
-  Jake
- age 29
- occupation |
-  Software engineer
-```
+  ```
+  lead
+   name |
+    Jake
+   age 29
+   occupation |
+    Software engineer
+  ```
 
 #### Collections
 
@@ -415,7 +417,9 @@ data class KV<K, V>(
 )
 ```
 
-**Comments** are coded as any node where the first cell contains exactly `//`. Comments are ignored
+#### Other
+
+`TODO` **Comments** are coded as any node where the first cell contains exactly `//`. Comments are ignored
 when decoding. To encode a node with a first cell containing the string `"//"`, prepend the cell
 with a `\`.
 
