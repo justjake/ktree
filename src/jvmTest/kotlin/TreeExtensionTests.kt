@@ -1,5 +1,6 @@
 package tl.jake.ktree
 
+import kotlin.math.exp
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -68,6 +69,26 @@ class TreeExtensionTests {
 
     @Test
     fun `test addAt with low level index`() = testAdd(null)
+
+    @Test
+    fun `test cloneData`() {
+        val node = NodeBuilder.build {
+            cell("CoolType")
+            cell("data1")
+            cell("data2")
+            node("CoolChild1", "childData1")
+            node("CoolChild2", "childData1")
+        }
+        val expected = NodeBuilder.build {
+            cell("data1")
+            cell("data2")
+            node("CoolChild1", "childData1")
+            node("CoolChild2", "childData1")
+        }
+
+        val clonedData = node.cloneData("CoolType")
+        assertTreesHaveSameContent(expected, clonedData)
+    }
 
     private fun testAdd(type: AddingAt?) {
         val needle = NodeBuilder.build("needle")

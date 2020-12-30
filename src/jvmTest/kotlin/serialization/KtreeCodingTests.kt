@@ -96,6 +96,39 @@ class KtreeCodingTests {
         }
     }
 
+    fun objMapNative() = mapOf<Bob, Bob?>(
+        Bob("key foo") to Bob("value foo"),
+        Bob("key bar") to Bob("value bar"),
+        Bob("key null") to null
+    )
+
+    fun objMapTree() = NodeBuilder.build {
+        node("-") {
+            node("key") {
+                node("name", "key foo")
+            }
+            node("value") {
+                node("name", "value foo")
+            }
+        }
+
+        node("-") {
+            node("key") {
+                node("name", "key bar")
+            }
+            node("value") {
+                node("name", "value bar")
+            }
+        }
+
+        node("-") {
+            node("key") {
+                node("name", "key null")
+            }
+            node("value", "null")
+        }
+    }
+
     fun polyNative() = ContainsPolymorph(listOf(
         Animal.Bird(3),
         Animal.Lizard(0),
@@ -145,6 +178,7 @@ class KtreeCodingTests {
         val tree = encodeToTree<T>(this)
         assertEquals(stringify(expected), stringify(tree))
         assertTreesHaveSameContent(expected, tree)
+        println(stringify(tree))
     }
 
     private inline fun <reified T> Tree.assertDecodesTo(expected: T) {
@@ -167,6 +201,12 @@ class KtreeCodingTests {
 
     @Test
     fun `decode map`() = mapTree().assertDecodesTo(mapNative())
+
+    @Test
+    fun `encode object map`() = objMapNative().assertEncodesTo(objMapTree())
+
+    @Test
+    fun `decode object map`() = objMapTree().assertDecodesTo(objMapNative())
 
     @Test
     fun `encode poly`() = polyNative().assertEncodesTo(polyTree())

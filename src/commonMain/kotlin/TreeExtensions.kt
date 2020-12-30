@@ -45,11 +45,16 @@ fun Tree.removeChild(type: String, vararg dataPrefix: String) {
 }
 
 // TODO: rename to cloneWithoutPrefix?
-private fun Tree.Node.cloneData(vararg omitDataPrefix: String): Tree.Node =
+fun Tree.Node.cloneData(vararg omitDataPrefix: String): Tree.Node =
     cloneWith(cells = false) {
         this@cloneData.dataCells.forEachIndexed { index, s ->
-            if (omitDataPrefix.size > index && s != omitDataPrefix[index]) {
-                cell(s)
+            when {
+                index >= omitDataPrefix.size -> cell(s)
+                index < omitDataPrefix.size -> {
+                    if (s != omitDataPrefix[index]) {
+                        cell(s)
+                    }
+                }
             }
         }
     }
