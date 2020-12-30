@@ -18,11 +18,13 @@ enum class Color(val rgb: Int) {
 sealed class Animal {
     @Serializable
     data class Bird(val wingspan: Int) : Animal()
+
     @Serializable
-    data class Mammal(val furLength: Int): Animal()
+    data class Mammal(val furLength: Int) : Animal()
+
     @Serializable
     @SerialName("Lazard")
-    data class Lizard(val lazyness: Int): Animal()
+    data class Lizard(val lazyness: Int) : Animal()
 }
 
 @Serializable
@@ -37,6 +39,7 @@ data class Frob(
     val friend: Bob?,
     val color: Color,
 )
+
 @Serializable
 data class Bob(val name: String)
 
@@ -61,6 +64,7 @@ data class TestData(
     enum class Type {
         @SerialName("json")
         Json(),
+
         @SerialName("tree notation")
         TreeNotation(),
     }
@@ -79,14 +83,15 @@ class KtreeCodingTests {
     }
 
     private inline fun <reified T> Tree.assertDecodesTo(expected: T) {
-        val value: T = when(this) {
+        val value: T = when (this) {
             is Tree.Root -> decodeFromTree(this)
             is Tree.Node -> decodeFromTree(this)
         }
         if (expected is List<*> && value is List<*>) {
             expected.forEachIndexed { index, expectedChild ->
                 val child = value[index]
-                val expectedClass = if (expectedChild != null) expectedChild::class.toString() else "null"
+                val expectedClass =
+                    if (expectedChild != null) expectedChild::class.toString() else "null"
                 val childClass = if (child != null) child::class.toString() else "null"
                 assertEquals(expectedChild, child, "$index in $value")
             }
@@ -104,6 +109,7 @@ class KtreeCodingTests {
         null,
         Color.GREEN,
     )
+
     private fun treeExample() = NodeBuilder.build {
         node("thingy") {
             node("name", "Jesse")
@@ -119,13 +125,17 @@ class KtreeCodingTests {
         node("friend", "null")
         node("color", "GREEN")
     }
-    @Test fun `test encode`() = nativeExample().assertEncodesTo(treeExample())
-    @Test fun `test decode`() = treeExample().assertDecodesTo(nativeExample())
+
+    @Test
+    fun `test encode`() = nativeExample().assertEncodesTo(treeExample())
+    @Test
+    fun `test decode`() = treeExample().assertDecodesTo(nativeExample())
 
     private fun mapNative() = mapOf<String, Bob>(
         "omlette" to Bob("comlette"),
         "cheese" to Bob("velveeta")
     )
+
     private fun mapTree() = NodeBuilder.build {
         node("omlette") {
             node("name", "comlette")
@@ -134,14 +144,18 @@ class KtreeCodingTests {
             node("name", "velveeta")
         }
     }
-    @Test fun `encode map`() = mapNative().assertEncodesTo(mapTree())
-    @Test fun `decode map`() = mapTree().assertDecodesTo(mapNative())
+
+    @Test
+    fun `encode map`() = mapNative().assertEncodesTo(mapTree())
+    @Test
+    fun `decode map`() = mapTree().assertDecodesTo(mapNative())
 
     private fun objMapNative() = mapOf<Bob, Bob?>(
         Bob("key foo") to Bob("value foo"),
         Bob("key bar") to Bob("value bar"),
         Bob("key null") to null
     )
+
     private fun objMapTree() = NodeBuilder.build {
         node("-") {
             node("key") {
@@ -168,14 +182,20 @@ class KtreeCodingTests {
             node("value", "null")
         }
     }
-    @Test fun `encode object map`() = objMapNative().assertEncodesTo(objMapTree())
-    @Test fun `decode object map`() = objMapTree().assertDecodesTo(objMapNative())
 
-    private fun polyNative() = ContainsPolymorph(listOf(
-        Animal.Bird(3),
-        Animal.Lizard(0),
-        Animal.Mammal(1),
-    ))
+    @Test
+    fun `encode object map`() = objMapNative().assertEncodesTo(objMapTree())
+    @Test
+    fun `decode object map`() = objMapTree().assertDecodesTo(objMapNative())
+
+    private fun polyNative() = ContainsPolymorph(
+        listOf(
+            Animal.Bird(3),
+            Animal.Lizard(0),
+            Animal.Mammal(1),
+        )
+    )
+
     private fun polyTree() = NodeBuilder.build {
         node("poly") {
             node("-", "tl.jake.ktree.serialization.Animal.Bird") {
@@ -189,18 +209,25 @@ class KtreeCodingTests {
             }
         }
     }
-    @Test fun `encode poly`() = polyNative().assertEncodesTo(polyTree())
-    @Test fun `decode poly`() = polyTree().assertDecodesTo(polyNative())
+
+    @Test
+    fun `encode poly`() = polyNative().assertEncodesTo(polyTree())
+    @Test
+    fun `decode poly`() = polyTree().assertDecodesTo(polyNative())
 
     private fun annotationsNative(): TestStatement = IntegrationTest(
         "basic json output",
-        TestData(TestData.Type.TreeNotation, """
+        TestData(
+            TestData.Type.TreeNotation, """
             parent cell1 cell2
              child ccell1 ccell2
-        """.trimIndent()),
-        TestData(TestData.Type.Json, """
+        """.trimIndent()
+        ),
+        TestData(
+            TestData.Type.Json, """
             {"cells": ["cell1","cell2"], "children": [{ cells: ["ccell1", "ccell2"]}]}
-        """.trimIndent())
+        """.trimIndent()
+        )
     )
 
     // Inspiration for multi-line string marker | is from YAML, read more: https://yaml-multiline.info/
@@ -214,8 +241,11 @@ class KtreeCodingTests {
         ${"\t"}output${"\t"}json
         ${"\t\t"}{\"cells\": [\"cell1\",\"cell2\"], \"children\": [{ cells: [\"ccell1\", \"ccell2\"]}]}
     """.trimIndent().let { TreeNotation().parse(it).children[0] }
-    @Test fun `encode annotations`() = annotationsNative().assertEncodesTo(annotationsTree())
-    @Test fun `decode annotations`() = annotationsTree().assertDecodesTo(annotationsNative())
+
+    @Test
+    fun `encode annotations`() = annotationsNative().assertEncodesTo(annotationsTree())
+    @Test
+    fun `decode annotations`() = annotationsTree().assertDecodesTo(annotationsNative())
 
     private fun simpleListNative() = listOf("foo", "bar", "baz", null, "null")
     private fun simpleListTree() = NodeBuilder.build {
@@ -225,6 +255,9 @@ class KtreeCodingTests {
         node("-", "null")
         node("-", "\\null")
     }
-    @Test fun `encode simple list`() = simpleListNative().assertEncodesTo(simpleListTree())
-    @Test fun `decode simple list`() = simpleListTree().assertDecodesTo(simpleListNative())
+
+    @Test
+    fun `encode simple list`() = simpleListNative().assertEncodesTo(simpleListTree())
+    @Test
+    fun `decode simple list`() = simpleListTree().assertDecodesTo(simpleListNative())
 }

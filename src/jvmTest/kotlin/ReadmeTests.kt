@@ -86,7 +86,8 @@ parent
                 "OVERINDENTED_STRICT_JSON" -> parse(overindented).toJson(json)
                 "OVERINDENTED_EQUAL_OUTLINE" -> parseEqual(overindented).toOutline()
                 "OVERINDENTED_EQUAL_JSON" -> parseEqual(overindented).toJson(json)
-                "KTREE_KOTLIN" -> readResource("ReadMePackage.kt.example")!!.readAllBytes().decodeToString()
+                "KTREE_KOTLIN" -> readResource("ReadMePackage.kt.example")!!.readAllBytes()
+                    .decodeToString()
                 "KTREE_KOTLIN_STRING" -> {
                     // TODO: make this work
 //                    val tree = TreeNotation.Spaces.parse(example)

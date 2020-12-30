@@ -25,7 +25,7 @@ enum class Symbol(val value: String) {
     MultilineString("|"),
     Escape("\\");
 
-    fun escaped() =  Escape.value + this.value
+    fun escaped() = Escape.value + this.value
 
 }
 
@@ -166,12 +166,16 @@ class KtreeClassEncoder(root: Tree.Node) : KtreeEncoder(root) {
 }
 
 @ExperimentalSerializationApi
-class KtreeMapEncoder(val root: Tree.Node, override val serializersModule: SerializersModule) : AbstractEncoder() {
+class KtreeMapEncoder(val root: Tree.Node, override val serializersModule: SerializersModule) :
+    AbstractEncoder() {
     sealed class State {
         object Initial : State()
-        data class EncodeKeyNext(val keyEncoder: KtreeEncoder, val valueEncoder: KtreeEncoder) : State()
+        data class EncodeKeyNext(val keyEncoder: KtreeEncoder, val valueEncoder: KtreeEncoder) :
+            State()
+
         data class EncodeValueNext(val valueEncoder: KtreeEncoder) : State()
     }
+
     var state: State = State.Initial
 
     override fun encodeNull() = nextEncoder().encodeNull()
@@ -184,7 +188,8 @@ class KtreeMapEncoder(val root: Tree.Node, override val serializersModule: Seria
     override fun encodeDouble(value: Double) = nextEncoder().encodeDouble(value)
     override fun encodeChar(value: Char) = nextEncoder().encodeChar(value)
     override fun encodeString(value: String) = nextEncoder().encodeString(value)
-    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = nextEncoder().encodeEnum(enumDescriptor, index)
+    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) =
+        nextEncoder().encodeEnum(enumDescriptor, index)
 
     private fun nextEncoder(): KtreeEncoder {
         return when (val startingState = state) {
@@ -233,8 +238,10 @@ fun <T> decodeFromTree(node: Tree.Node, deserializer: DeserializationStrategy<T>
 
 @ExperimentalSerializationApi
 inline fun <reified T> decodeFromTree(node: Tree.Node): T = decodeFromTree(node, serializer())
+
 @ExperimentalSerializationApi
-inline fun <reified T> decodeFromTree(node: Tree.Root): T = decodeFromTree(node.toNode(), serializer())
+inline fun <reified T> decodeFromTree(node: Tree.Root): T =
+    decodeFromTree(node.toNode(), serializer())
 
 @ExperimentalSerializationApi
 open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
@@ -250,6 +257,7 @@ open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
     override fun decodeLong(): Long = nextCell().toLong()
     override fun decodeFloat(): Float = nextCell().toFloat()
     override fun decodeDouble(): Double = nextCell().toDouble()
+
     // TODO: should this be .toInt().toChar()?
     override fun decodeChar(): Char = unescapeString(nextCell()).toCharArray().first()
     override fun decodeString(): String = unescapeString(nextCell())
@@ -268,8 +276,11 @@ open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
-        when(descriptor.kind) {
-            is StructureKind.LIST -> KtreeListDecoder(node.cloneData(elementIndex), serializersModule)
+        when (descriptor.kind) {
+            is StructureKind.LIST -> KtreeListDecoder(
+                node.cloneData(elementIndex),
+                serializersModule
+            )
             is StructureKind.MAP -> KtreeMapDecoder(node.cloneData(elementIndex), serializersModule)
             is StructureKind -> KtreeClassDecoder(node.cloneData(elementIndex), serializersModule)
             else -> KtreeDecoder(node.cloneData(elementIndex))
@@ -283,11 +294,13 @@ open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
         check(maybeCell != null) { "Cell $elementIndex must not be null in $node" }
         return maybeCell
     }
+
     protected fun nextCell(): String = cell().also { elementIndex++ }
 }
 
 @ExperimentalSerializationApi
-class KtreeListDecoder(val root: Tree.Node, override val serializersModule: SerializersModule) : AbstractDecoder() {
+class KtreeListDecoder(val root: Tree.Node, override val serializersModule: SerializersModule) :
+    AbstractDecoder() {
     var elementIndex = 0
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = elementIndex
 
@@ -302,12 +315,17 @@ class KtreeListDecoder(val root: Tree.Node, override val serializersModule: Seri
     override fun decodeDouble() = nextDecoder().decodeDouble()
     override fun decodeChar() = nextDecoder().decodeChar()
     override fun decodeString() = nextDecoder().decodeString()
-    override fun decodeEnum(enumDescriptor: SerialDescriptor) = nextDecoder().decodeEnum(enumDescriptor)
-    override fun beginStructure(descriptor: SerialDescriptor) = nextDecoder().beginStructure(descriptor)
+    override fun decodeEnum(enumDescriptor: SerialDescriptor) =
+        nextDecoder().decodeEnum(enumDescriptor)
+
+    override fun beginStructure(descriptor: SerialDescriptor) =
+        nextDecoder().beginStructure(descriptor)
 
     private fun decoder(): KtreeDecoder {
         val child = root.children[elementIndex]
-        return if (child.typeCell == Symbol.List.value) KtreeDecoder(child.cloneData(Symbol.List.value)) else KtreeDecoder(child)
+        return if (child.typeCell == Symbol.List.value) KtreeDecoder(child.cloneData(Symbol.List.value)) else KtreeDecoder(
+            child
+        )
     }
 
     private fun nextDecoder() = decoder().also { elementIndex++ }
@@ -320,7 +338,8 @@ class KtreeListDecoder(val root: Tree.Node, override val serializersModule: Seri
 }
 
 @ExperimentalSerializationApi
-class KtreeMapDecoder(val root: Tree.Node, override val serializersModule: SerializersModule) : AbstractDecoder() {
+class KtreeMapDecoder(val root: Tree.Node, override val serializersModule: SerializersModule) :
+    AbstractDecoder() {
     var elementIndex = 0
     val size = root.children.size * 2
     var elementDecoder: KtreeDecoder? = null
@@ -336,8 +355,11 @@ class KtreeMapDecoder(val root: Tree.Node, override val serializersModule: Seria
     override fun decodeDouble() = nextDecoder().decodeDouble()
     override fun decodeChar() = nextDecoder().decodeChar()
     override fun decodeString() = nextDecoder().decodeString()
-    override fun decodeEnum(enumDescriptor: SerialDescriptor) = nextDecoder().decodeEnum(enumDescriptor)
-    override fun beginStructure(descriptor: SerialDescriptor) = nextDecoder().beginStructure(descriptor)
+    override fun decodeEnum(enumDescriptor: SerialDescriptor) =
+        nextDecoder().decodeEnum(enumDescriptor)
+
+    override fun beginStructure(descriptor: SerialDescriptor) =
+        nextDecoder().beginStructure(descriptor)
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         check(descriptor.kind is StructureKind.MAP) { "Can only decode MAP, was ${descriptor.kind}" }
@@ -380,7 +402,8 @@ class KtreeMapDecoder(val root: Tree.Node, override val serializersModule: Seria
 }
 
 @ExperimentalSerializationApi
-class KtreeClassDecoder(val root: Tree.Node, override val serializersModule: SerializersModule) : AbstractDecoder() {
+class KtreeClassDecoder(val root: Tree.Node, override val serializersModule: SerializersModule) :
+    AbstractDecoder() {
     var inlineDecoded = 0
     var anonymousDecoded = 0
     var childIndex = 0
@@ -399,8 +422,11 @@ class KtreeClassDecoder(val root: Tree.Node, override val serializersModule: Ser
     override fun decodeDouble() = nextDecoder().decodeDouble()
     override fun decodeChar() = nextDecoder().decodeChar()
     override fun decodeString() = nextDecoder().decodeString()
-    override fun decodeEnum(enumDescriptor: SerialDescriptor) = nextDecoder().decodeEnum(enumDescriptor)
-    override fun beginStructure(descriptor: SerialDescriptor) = nextDecoder().beginStructure(descriptor)
+    override fun decodeEnum(enumDescriptor: SerialDescriptor) =
+        nextDecoder().decodeEnum(enumDescriptor)
+
+    override fun beginStructure(descriptor: SerialDescriptor) =
+        nextDecoder().beginStructure(descriptor)
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         check(descriptor.kind !is StructureKind.MAP) { "MAP should be decoded by KtreeMapDecoder" }
@@ -466,7 +492,8 @@ private inline fun <reified T> SerialDescriptor.getAnnotation(index: Int): T? {
 }
 
 @ExperimentalSerializationApi
-private inline fun <reified T> SerialDescriptor.hasAnnotation(index: Int) = getAnnotation<T>(index) != null
+private inline fun <reified T> SerialDescriptor.hasAnnotation(index: Int) =
+    getAnnotation<T>(index) != null
 
 @ExperimentalSerializationApi
 private inline fun SerialDescriptor.canEncodeInline(index: Int) =
@@ -474,5 +501,6 @@ private inline fun SerialDescriptor.canEncodeInline(index: Int) =
             getElementDescriptor(index).kind.let {
                 it is SerialKind.ENUM || it is PrimitiveKind
             }
+
 @ExperimentalSerializationApi
 private inline fun SerialDescriptor.canEncodeAnonymous(index: Int) = hasAnnotation<Anonymous>(index)
