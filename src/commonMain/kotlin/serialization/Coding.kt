@@ -1,5 +1,6 @@
 /**
- * Serialize Kotlin values to Tree Notation.
+ * Encode Kotlin types to Tree Notation.
+ * Decode tree notation to Kotlin types.
  * See https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/formats.md#custom-formats-experimental
  */
 package tl.jake.ktree.serialization
@@ -19,8 +20,8 @@ import tl.jake.ktree.Tree
 import tl.jake.ktree.toOutline
 
 // TODO: re-work null handling. Just encoding as "null" means that
-// String? fields are ambiguous because { value: null } and { value: "null" }
-// encode identically.
+//       String? fields are ambiguous because { value: null } and { value: "null" }
+//       encode identically.
 internal const val NULL = "null"
 internal const val LIST_TYPE = "-"
 internal const val JSON_QUOTE = '"'

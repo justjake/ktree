@@ -81,11 +81,10 @@ class NodeBuilder {
     }
 
     companion object {
-        fun build(vararg cells: String, block: NodeBuilderBlock? = null): Tree.Node {
-            val builder = NodeBuilder()
-            builder.cells(*cells)
-            block?.let { builder.run(it) }
-            return builder.build(null)
+        fun build(block: NodeBuilderBlock): Tree.Node = NodeBuilder(block).build(null)
+        fun build(vararg cells: String, block: NodeBuilderBlock? = null): Tree.Node = build {
+            this.cells(*cells)
+            if (block != null) block(this)
         }
 
         fun box() = Ref.Box<Tree.Node>(null)

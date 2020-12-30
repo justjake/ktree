@@ -3,7 +3,7 @@ package tl.jake.ktree
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class TestData {
+class TreeExtensionTestData {
     lateinit var author: Tree.Node
     lateinit var none: Tree.Node
     val root = TreeBuilder.build {
@@ -26,12 +26,12 @@ class TreeExtensionTests {
 
     @Test
     fun `run toString`() {
-        println(TestData().root)
+        println(TreeExtensionTestData().root)
     }
 
     @Test
     fun `test moveTo`() {
-        val testData = TestData()
+        val testData = TreeExtensionTestData()
         testData.other.moveTo(testData.root)
         assertTreesHaveSameContent(
             TreeBuilder.build {
