@@ -5,7 +5,6 @@ import Dependency
 import PackageSpec
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import tl.jake.ktree.serialization.decodeFromTree
 import tl.jake.ktree.serialize.toJson
 import java.io.File
 import kotlin.test.Test

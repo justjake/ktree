@@ -144,7 +144,6 @@ class KtreeClassEncoder(root: Tree.Node) : KtreeEncoder(root) {
         }
 
         val newChild = if (descriptor.canEncodeAnonymous(index)) {
-            println("shouldEncodeAnonymously: $name true")
             NodeBuilder.build()
         } else {
             NodeBuilder.build(escapeString(descriptor.getElementName(index)))
@@ -487,7 +486,6 @@ class KtreeClassDecoder(val root: Tree.Node, override val serializersModule: Ser
 @ExperimentalSerializationApi
 private inline fun <reified T> SerialDescriptor.getAnnotation(index: Int): T? {
     val annotations = getElementDescriptor(index).annotations + getElementAnnotations(index)
-    println("annotations for ${getElementName(index)}: $annotations")
     return annotations.find { it is T } as T?
 }
 
