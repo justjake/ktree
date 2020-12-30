@@ -58,3 +58,10 @@ fun Tree.Node.cloneData(vararg omitDataPrefix: String): Tree.Node =
             }
         }
     }
+
+fun Tree.Node.cloneData(startAt: Int): Tree.Node =
+    cloneWith(cells = false) {
+        this@cloneData.cells.forEachIndexed { index, s ->
+            if (index >= startAt) cell(s)
+        }
+    }

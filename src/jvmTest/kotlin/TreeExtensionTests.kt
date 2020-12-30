@@ -71,7 +71,7 @@ class TreeExtensionTests {
     fun `test addAt with low level index`() = testAdd(null)
 
     @Test
-    fun `test cloneData`() {
+    fun `test cloneData(strings)`() {
         val node = NodeBuilder.build {
             cell("CoolType")
             cell("data1")
@@ -87,6 +87,26 @@ class TreeExtensionTests {
         }
 
         val clonedData = node.cloneData("CoolType")
+        assertTreesHaveSameContent(expected, clonedData)
+    }
+
+    @Test
+    fun `test cloneData(index)`() {
+        val node = NodeBuilder.build {
+            cell("CoolType")
+            cell("data1")
+            cell("data2")
+            node("CoolChild1", "childData1")
+            node("CoolChild2", "childData1")
+        }
+        val expected = NodeBuilder.build {
+            cell("data1")
+            cell("data2")
+            node("CoolChild1", "childData1")
+            node("CoolChild2", "childData1")
+        }
+
+        val clonedData = node.cloneData(1)
         assertTreesHaveSameContent(expected, clonedData)
     }
 

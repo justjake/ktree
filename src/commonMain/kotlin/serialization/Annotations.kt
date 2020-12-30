@@ -1,5 +1,8 @@
 package tl.jake.ktree.serialization
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialInfo
+
 /**
  * Mark a field containing a primitive type as able to be inlined into a cell when encoding
  * the containing type to tree notation.
@@ -9,7 +12,9 @@ package tl.jake.ktree.serialization
  *
  * For non-primitive types, @Inline is ignored.
  */
-@Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
+@Target(AnnotationTarget.PROPERTY)
+@ExperimentalSerializationApi
+@SerialInfo
 @MustBeDocumented
 annotation class Inline
 
@@ -21,6 +26,8 @@ annotation class Inline
  * in the class. Using more than one anonymous field in a type may make that
  * type's tree encoding difficult to write correctly for humans.
  */
-@Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
+@Target(AnnotationTarget.PROPERTY)
+@ExperimentalSerializationApi
+@SerialInfo
 @MustBeDocumented
 annotation class Anonymous

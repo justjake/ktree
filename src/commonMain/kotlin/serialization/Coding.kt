@@ -8,6 +8,7 @@ package tl.jake.ktree.serialization
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.AbstractEncoder
@@ -135,12 +136,15 @@ class KtreeClassEncoder(root: Tree.Node) : KtreeEncoder(root) {
     var target = root
 
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
-        if (shouldEncodeInline(descriptor, index)) {
+        val name = descriptor.getElementName(index)
+
+        if (descriptor.canEncodeInline(index)) {
             target = node
             return true
         }
 
-        val newChild = if (shouldEncodeAnonymously(descriptor, index)) {
+        val newChild = if (descriptor.canEncodeAnonymous(index)) {
+            println("shouldEncodeAnonymously: $name true")
             NodeBuilder.build()
         } else {
             NodeBuilder.build(escapeString(descriptor.getElementName(index)))
@@ -149,20 +153,6 @@ class KtreeClassEncoder(root: Tree.Node) : KtreeEncoder(root) {
         node.addChild(newChild)
         target = newChild
         return true
-    }
-
-    private inline fun <reified T> SerialDescriptor.getAnnotation(index: Int): T? {
-        val annotations = getElementAnnotations(index)
-        return annotations.find { it is T } as T?
-    }
-
-    private fun shouldEncodeInline(descriptor: SerialDescriptor, index: Int): Boolean {
-        val childDescriptor = descriptor.getElementDescriptor(index)
-        return descriptor.getAnnotation<Inline>(index) != null && childDescriptor.kind is PrimitiveKind
-    }
-
-    private fun shouldEncodeAnonymously(descriptor: SerialDescriptor, index: Int): Boolean {
-        return descriptor.getAnnotation<Anonymous>(index) != null
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
@@ -253,18 +243,18 @@ open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule
 
     override fun decodeNotNullMark(): Boolean = cellOrNull() != Symbol.Null.value
-    override fun decodeBoolean(): Boolean = cell().toBoolean()
-    override fun decodeByte(): Byte = cell().toByte()
-    override fun decodeShort(): Short = cell().toShort()
-    override fun decodeInt(): Int = cell().toInt()
-    override fun decodeLong(): Long = cell().toLong()
-    override fun decodeFloat(): Float = cell().toFloat()
-    override fun decodeDouble(): Double = cell().toDouble()
+    override fun decodeBoolean(): Boolean = nextCell().toBoolean()
+    override fun decodeByte(): Byte = nextCell().toByte()
+    override fun decodeShort(): Short = nextCell().toShort()
+    override fun decodeInt(): Int = nextCell().toInt()
+    override fun decodeLong(): Long = nextCell().toLong()
+    override fun decodeFloat(): Float = nextCell().toFloat()
+    override fun decodeDouble(): Double = nextCell().toDouble()
     // TODO: should this be .toInt().toChar()?
-    override fun decodeChar(): Char = unescapeString(cell()).toCharArray().first()
-    override fun decodeString(): String = unescapeString(cell())
+    override fun decodeChar(): Char = unescapeString(nextCell()).toCharArray().first()
+    override fun decodeString(): String = unescapeString(nextCell())
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
-        val name = unescapeString(cell())
+        val name = unescapeString(nextCell())
         return enumDescriptor.getElementIndex(name)
     }
 
@@ -279,10 +269,10 @@ open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
         when(descriptor.kind) {
-            is StructureKind.LIST -> KtreeListDecoder(node, serializersModule)
-            is StructureKind.MAP -> KtreeMapDecoder(node, serializersModule)
-            is StructureKind -> KtreeClassDecoder(node)
-            else -> KtreeDecoder(node)
+            is StructureKind.LIST -> KtreeListDecoder(node.cloneData(elementIndex), serializersModule)
+            is StructureKind.MAP -> KtreeMapDecoder(node.cloneData(elementIndex), serializersModule)
+            is StructureKind -> KtreeClassDecoder(node.cloneData(elementIndex), serializersModule)
+            else -> KtreeDecoder(node.cloneData(elementIndex))
         }
 
     override fun decodeSequentially(): Boolean = true
@@ -293,6 +283,7 @@ open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
         check(maybeCell != null) { "Cell $elementIndex must not be null in $node" }
         return maybeCell
     }
+    protected fun nextCell(): String = cell().also { elementIndex++ }
 }
 
 @ExperimentalSerializationApi
@@ -389,32 +380,99 @@ class KtreeMapDecoder(val root: Tree.Node, override val serializersModule: Seria
 }
 
 @ExperimentalSerializationApi
-class KtreeClassDecoder(node: Tree.Node) : KtreeDecoder(node) {
+class KtreeClassDecoder(val root: Tree.Node, override val serializersModule: SerializersModule) : AbstractDecoder() {
+    var inlineDecoded = 0
+    var anonymousDecoded = 0
+    var childIndex = 0
+
+    val cellDecoder = KtreeDecoder(root)
+    var decoder: KtreeDecoder? = null
+
+    override fun decodeNotNullMark() = nextDecoder().decodeNotNullMark()
+    override fun decodeNull() = nextDecoder().decodeNull()
+    override fun decodeBoolean() = nextDecoder().decodeBoolean()
+    override fun decodeByte() = nextDecoder().decodeByte()
+    override fun decodeShort() = nextDecoder().decodeShort()
+    override fun decodeInt() = nextDecoder().decodeInt()
+    override fun decodeLong() = nextDecoder().decodeLong()
+    override fun decodeFloat() = nextDecoder().decodeFloat()
+    override fun decodeDouble() = nextDecoder().decodeDouble()
+    override fun decodeChar() = nextDecoder().decodeChar()
+    override fun decodeString() = nextDecoder().decodeString()
+    override fun decodeEnum(enumDescriptor: SerialDescriptor) = nextDecoder().decodeEnum(enumDescriptor)
+    override fun beginStructure(descriptor: SerialDescriptor) = nextDecoder().beginStructure(descriptor)
+
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        if (node.children.isEmpty() || elementIndex >= node.children.size) {
-            return CompositeDecoder.DECODE_DONE
+        check(descriptor.kind !is StructureKind.MAP) { "MAP should be decoded by KtreeMapDecoder" }
+        check(descriptor.kind !is StructureKind.LIST) { "LIST should be decoded by KtreeListDecoder" }
+
+        val elementIndexes = 0 until descriptor.elementsCount
+
+        if (inlineDecoded < root.cells.size) {
+            val inlineIndexes = elementIndexes.filter {
+                if (!descriptor.canEncodeInline(it)) return@filter false
+
+                // TODO: move this check?
+                check(!descriptor.canEncodeAnonymous(it)) { "Element cannot be both @Inline and @Anonymous" }
+
+                val name = descriptor.getElementName(it)
+                if (root.children.any { child -> child.typeCell == name }) return@filter false
+                true
+            }
+            check(inlineIndexes.size >= root.cells.size) {
+                val fields = inlineIndexes.map { descriptor.getElementName(it) }
+                "Must have more @Inline fields ($fields) than inline data (${root.cells})"
+            }
+
+            decoder = cellDecoder
+            return inlineIndexes[inlineDecoded++]
         }
 
-        return when (descriptor.kind) {
-            is StructureKind.MAP -> elementIndex
-            else -> {
-                val child = node.children[elementIndex]
-                val name = unescapeString(child.typeCell!!)
-                return descriptor.getElementIndex(name)
+        if (childIndex < root.children.size) {
+            // Can still decode children
+            val child = root.children[childIndex++]
+            // TODO(jake): Do we need to decode this cell / unescape this string
+            val childType = checkNotNull(child.typeCell) { "Child should have some data" }
+            val serialIndex = descriptor.getElementIndex(childType)
+
+            // Named child
+            if (serialIndex >= 0) {
+                decoder = KtreeDecoder(child.cloneData(childType))
+                return serialIndex
             }
+
+            // Anonymous child
+            val anonymousIndexes = elementIndexes.filter { descriptor.canEncodeAnonymous(it) }
+            decoder = KtreeDecoder(child)
+            return anonymousIndexes[anonymousDecoded++]
         }
+
+
+        return CompositeDecoder.DECODE_DONE
     }
 
-    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
-        KtreeDecoder(child()).beginStructure(descriptor)
+    private fun nextDecoder(): KtreeDecoder {
+        return checkNotNull(decoder) { "Decoder should be populated by decodeElementIndex" }
+    }
 
     override fun decodeSequentially() = false
-
-    fun child(): Tree.Node {
-        val node = node.children[elementIndex]
-        elementIndex++
-        return node
-    }
-
-    override fun cellOrNull() = child().dataCells.firstOrNull()
 }
+
+@ExperimentalSerializationApi
+private inline fun <reified T> SerialDescriptor.getAnnotation(index: Int): T? {
+    val annotations = getElementDescriptor(index).annotations + getElementAnnotations(index)
+    println("annotations for ${getElementName(index)}: $annotations")
+    return annotations.find { it is T } as T?
+}
+
+@ExperimentalSerializationApi
+private inline fun <reified T> SerialDescriptor.hasAnnotation(index: Int) = getAnnotation<T>(index) != null
+
+@ExperimentalSerializationApi
+private inline fun SerialDescriptor.canEncodeInline(index: Int) =
+    hasAnnotation<Inline>(index) &&
+            getElementDescriptor(index).kind.let {
+                it is SerialKind.ENUM || it is PrimitiveKind
+            }
+@ExperimentalSerializationApi
+private inline fun SerialDescriptor.canEncodeAnonymous(index: Int) = hasAnnotation<Anonymous>(index)

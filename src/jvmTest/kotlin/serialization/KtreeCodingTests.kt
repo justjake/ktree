@@ -41,12 +41,17 @@ data class Frob(
 data class Bob(val name: String)
 
 @Serializable
+sealed class TestStatement
+
+@Serializable
+@SerialName("test")
 data class IntegrationTest(
     @Inline val name: String,
     val input: TestData,
     val output: TestData,
-)
+) : TestStatement()
 
+@ExperimentalSerializationApi
 @Serializable
 data class TestData(
     @Inline val type: Type,
@@ -54,126 +59,17 @@ data class TestData(
 ) {
     @Serializable
     enum class Type {
+        @SerialName("json")
         Json(),
+        @SerialName("tree notation")
         TreeNotation(),
     }
 }
 
 @ExperimentalSerializationApi
 class KtreeCodingTests {
-    fun nativeExample() = Frob(
-        Bob("Jesse"),
-        listOf(Bob("Holly"), Bob("Folly")),
-        null,
-        Color.GREEN,
-    )
-    fun treeExample() = NodeBuilder.build {
-        node("thingy") {
-            node("name", "Jesse")
-        }
-        node("cats") {
-            node("-") {
-                node("name", "Holly")
-            }
-            node("-") {
-                node("name", "Folly")
-            }
-        }
-        node("friend", "null")
-        node("color", "GREEN")
-    }
-
-    fun mapNative() = mapOf<String, Bob>(
-        "omlette" to Bob("comlette"),
-        "cheese" to Bob("velveeta")
-    )
-
-    fun mapTree() = NodeBuilder.build {
-        node("omlette") {
-            node("name", "comlette")
-        }
-        node("cheese") {
-            node("name", "velveeta")
-        }
-    }
-
-    fun objMapNative() = mapOf<Bob, Bob?>(
-        Bob("key foo") to Bob("value foo"),
-        Bob("key bar") to Bob("value bar"),
-        Bob("key null") to null
-    )
-
-    fun objMapTree() = NodeBuilder.build {
-        node("-") {
-            node("key") {
-                node("name", "key foo")
-            }
-            node("value") {
-                node("name", "value foo")
-            }
-        }
-
-        node("-") {
-            node("key") {
-                node("name", "key bar")
-            }
-            node("value") {
-                node("name", "value bar")
-            }
-        }
-
-        node("-") {
-            node("key") {
-                node("name", "key null")
-            }
-            node("value", "null")
-        }
-    }
-
-    fun polyNative() = ContainsPolymorph(listOf(
-        Animal.Bird(3),
-        Animal.Lizard(0),
-        Animal.Mammal(1),
-    ))
-
-    fun polyTree() = NodeBuilder.build {
-        node("poly") {
-            node("-", "tl.jake.ktree.serialization.Animal.Bird") {
-                node("wingspan", 3.toString())
-            }
-            node("-", "Lazard") {
-                node("lazyness", 0.toString())
-            }
-            node("-", "tl.jake.ktree.serialization.Animal.Mammal") {
-                node("furLength", 1.toString())
-            }
-        }
-    }
-
-    fun annotationsNative() = IntegrationTest(
-        "basic json output",
-        TestData(TestData.Type.TreeNotation, """
-            parent cell1 cell2
-             child ccell1 ccell2
-        """.trimIndent()),
-        TestData(TestData.Type.Json, """
-            {"cells": ["cell1","cell2"], "children": [{ cells: ["ccell1", "ccell2"]}]}
-        """.trimIndent())
-    )
-
-    // Inspiration for multi-line string marker | is from YAML, read more: https://yaml-multiline.info/
-    // In Ktree, this means "all child blocks shall be treated as a single string".
-    // Cells text is joined using the default cell break symbol "\t", and node lines are
-    // joined by the default node break symbol "\n".
-    fun annotationsTree() = """
-        test${"\t"}basic json output
-        ${"\t\t"}input${"\t"}tree notation
-        ${"\t\t\t"}|
-        ${"\t\t\t\t"}parent cell1 cell2
-        ${"\t\t\t\t"} child ccell1 ccell2
-        ${"\t\t"}output${"\t"}json
-        ${"\t\t\t"}{"cells": ["cell1","cell2"], "children": [{ cells: ["ccell1", "ccell2"]}]}
-    """.trimIndent().let { TreeNotation().parse(it) }
+    /* Helpers */
+    private fun stringify(node: Tree.Node): String = TreeNotation.Spaces.format(node)
 
     private inline fun <reified T> T.assertEncodesTo(expected: Tree.Node) {
         val tree = encodeToTree<T>(this)
@@ -200,35 +96,126 @@ class KtreeCodingTests {
         println(value.prettyToString())
     }
 
-    @Test
-    fun `test encode`() = nativeExample().assertEncodesTo(treeExample())
+    /* Cases */
 
-    @Test
-    fun `test decode`() = treeExample().assertDecodesTo(nativeExample())
+    private fun nativeExample() = Frob(
+        Bob("Jesse"),
+        listOf(Bob("Holly"), Bob("Folly")),
+        null,
+        Color.GREEN,
+    )
+    private fun treeExample() = NodeBuilder.build {
+        node("thingy") {
+            node("name", "Jesse")
+        }
+        node("cats") {
+            node("-") {
+                node("name", "Holly")
+            }
+            node("-") {
+                node("name", "Folly")
+            }
+        }
+        node("friend", "null")
+        node("color", "GREEN")
+    }
+    @Test fun `test encode`() = nativeExample().assertEncodesTo(treeExample())
+    @Test fun `test decode`() = treeExample().assertDecodesTo(nativeExample())
 
-    @Test
-    fun `encode map`() = mapNative().assertEncodesTo(mapTree())
+    private fun mapNative() = mapOf<String, Bob>(
+        "omlette" to Bob("comlette"),
+        "cheese" to Bob("velveeta")
+    )
+    private fun mapTree() = NodeBuilder.build {
+        node("omlette") {
+            node("name", "comlette")
+        }
+        node("cheese") {
+            node("name", "velveeta")
+        }
+    }
+    @Test fun `encode map`() = mapNative().assertEncodesTo(mapTree())
+    @Test fun `decode map`() = mapTree().assertDecodesTo(mapNative())
 
-    @Test
-    fun `decode map`() = mapTree().assertDecodesTo(mapNative())
+    private fun objMapNative() = mapOf<Bob, Bob?>(
+        Bob("key foo") to Bob("value foo"),
+        Bob("key bar") to Bob("value bar"),
+        Bob("key null") to null
+    )
+    private fun objMapTree() = NodeBuilder.build {
+        node("-") {
+            node("key") {
+                node("name", "key foo")
+            }
+            node("value") {
+                node("name", "value foo")
+            }
+        }
 
-    @Test
-    fun `encode object map`() = objMapNative().assertEncodesTo(objMapTree())
+        node("-") {
+            node("key") {
+                node("name", "key bar")
+            }
+            node("value") {
+                node("name", "value bar")
+            }
+        }
 
-    @Test
-    fun `decode object map`() = objMapTree().assertDecodesTo(objMapNative())
+        node("-") {
+            node("key") {
+                node("name", "key null")
+            }
+            node("value", "null")
+        }
+    }
+    @Test fun `encode object map`() = objMapNative().assertEncodesTo(objMapTree())
+    @Test fun `decode object map`() = objMapTree().assertDecodesTo(objMapNative())
 
-    @Test
-    fun `encode poly`() = polyNative().assertEncodesTo(polyTree())
+    private fun polyNative() = ContainsPolymorph(listOf(
+        Animal.Bird(3),
+        Animal.Lizard(0),
+        Animal.Mammal(1),
+    ))
+    private fun polyTree() = NodeBuilder.build {
+        node("poly") {
+            node("-", "tl.jake.ktree.serialization.Animal.Bird") {
+                node("wingspan", 3.toString())
+            }
+            node("-", "Lazard") {
+                node("lazyness", 0.toString())
+            }
+            node("-", "tl.jake.ktree.serialization.Animal.Mammal") {
+                node("furLength", 1.toString())
+            }
+        }
+    }
+    @Test fun `encode poly`() = polyNative().assertEncodesTo(polyTree())
+    @Test fun `decode poly`() = polyTree().assertDecodesTo(polyNative())
 
-    @Test
-    fun `decode poly`() = polyTree().assertDecodesTo(polyNative())
+    private fun annotationsNative(): TestStatement = IntegrationTest(
+        "basic json output",
+        TestData(TestData.Type.TreeNotation, """
+            parent cell1 cell2
+             child ccell1 ccell2
+        """.trimIndent()),
+        TestData(TestData.Type.Json, """
+            {"cells": ["cell1","cell2"], "children": [{ cells: ["ccell1", "ccell2"]}]}
+        """.trimIndent())
+    )
 
-    @Test
-    fun `encode annotations`() = annotationsNative().assertEncodesTo(annotationsTree().toNode())
-
-    @Test
-    fun `decode annotations`() = annotationsTree().assertDecodesTo(annotationsNative())
+    // Inspiration for multi-line string marker | is from YAML, read more: https://yaml-multiline.info/
+    // In Ktree, this means "all child blocks shall be treated as a single string".
+    // Cells text is joined using the default cell break symbol "\t", and node lines are
+    // joined by the default node break symbol "\n".
+    private fun annotationsTree() = """
+        test${"\t"}basic json output
+        ${"\t"}input${"\t"}tree notation
+        ${"\t\t"}parent cell1 cell2\n child ccell1 ccell2
+        ${"\t"}output${"\t"}json
+        ${"\t\t"}{\"cells\": [\"cell1\",\"cell2\"], \"children\": [{ cells: [\"ccell1\", \"ccell2\"]}]}
+    """.trimIndent().let { TreeNotation().parse(it).children[0] }
+    @Test fun `encode annotations`() = annotationsNative().assertEncodesTo(annotationsTree())
+    @Test fun `decode annotations`() = annotationsTree().assertDecodesTo(annotationsNative())
 
     private fun simpleListNative() = listOf("foo", "bar", "baz", null, "null")
     private fun simpleListTree() = NodeBuilder.build {
@@ -238,10 +225,6 @@ class KtreeCodingTests {
         node("-", "null")
         node("-", "\\null")
     }
-
     @Test fun `encode simple list`() = simpleListNative().assertEncodesTo(simpleListTree())
     @Test fun `decode simple list`() = simpleListTree().assertDecodesTo(simpleListNative())
-
-
-    private fun stringify(node: Tree.Node): String = TreeNotation.Spaces.format(node)
 }
