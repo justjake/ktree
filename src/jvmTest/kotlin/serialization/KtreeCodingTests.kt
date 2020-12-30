@@ -4,6 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import tl.jake.ktree.*
+import kotlin.math.exp
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -186,8 +187,17 @@ class KtreeCodingTests {
             is Tree.Root -> decodeFromTree(this)
             is Tree.Node -> decodeFromTree(this)
         }
-        assertEquals(expected.prettyToString(), value.prettyToString())
+        if (expected is List<*> && value is List<*>) {
+            expected.forEachIndexed { index, expectedChild ->
+                val child = value[index]
+                val expectedClass = if (expectedChild != null) expectedChild::class.toString() else "null"
+                val childClass = if (child != null) child::class.toString() else "null"
+                assertEquals(expectedChild, child, "$index in $value")
+            }
+        }
         assertEquals(expected, value)
+        assertEquals(expected.prettyToString(), value.prettyToString())
+        println(value.prettyToString())
     }
 
     @Test
@@ -219,6 +229,19 @@ class KtreeCodingTests {
 
     @Test
     fun `decode annotations`() = annotationsTree().assertDecodesTo(annotationsNative())
+
+    private fun simpleListNative() = listOf("foo", "bar", "baz", null, "null")
+    private fun simpleListTree() = NodeBuilder.build {
+        node("-", "foo")
+        node("-", "bar")
+        node("-", "baz")
+        node("-", "null")
+        node("-", "\\null")
+    }
+
+    @Test fun `encode simple list`() = simpleListNative().assertEncodesTo(simpleListTree())
+    @Test fun `decode simple list`() = simpleListTree().assertDecodesTo(simpleListNative())
+
 
     private fun stringify(node: Tree.Node): String = TreeNotation.Spaces.format(node)
 }

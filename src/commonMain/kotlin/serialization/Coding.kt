@@ -16,10 +16,7 @@ import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import tl.jake.ktree.NodeBuilder
-import tl.jake.ktree.Tree
-import tl.jake.ktree.getChildData
-import tl.jake.ktree.toOutline
+import tl.jake.ktree.*
 
 enum class Symbol(val value: String) {
     Null("null"),
@@ -282,7 +279,7 @@ open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
         when(descriptor.kind) {
-            is StructureKind.LIST -> KtreeListDecoder(node)
+            is StructureKind.LIST -> KtreeListDecoder(node, serializersModule)
             is StructureKind.MAP -> KtreeMapDecoder(node, serializersModule)
             is StructureKind -> KtreeClassDecoder(node)
             else -> KtreeDecoder(node)
@@ -299,16 +296,36 @@ open class KtreeDecoder(val node: Tree.Node) : AbstractDecoder() {
 }
 
 @ExperimentalSerializationApi
-class KtreeListDecoder(node: Tree.Node) : KtreeDecoder(node) {
-    // Does this even make sense??
-    override fun cellOrNull() = node.dataCells.getOrNull(elementIndex)
-    fun child() = node.children[elementIndex]
+class KtreeListDecoder(val root: Tree.Node, override val serializersModule: SerializersModule) : AbstractDecoder() {
+    var elementIndex = 0
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int = elementIndex
 
-    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-        val result = KtreeDecoder(child()).beginStructure(descriptor)
-        elementIndex++
-        return result
+    override fun decodeNotNullMark() = decoder().decodeNotNullMark()
+    override fun decodeNull() = nextDecoder().decodeNull()
+    override fun decodeBoolean() = nextDecoder().decodeBoolean()
+    override fun decodeByte() = nextDecoder().decodeByte()
+    override fun decodeShort() = nextDecoder().decodeShort()
+    override fun decodeInt() = nextDecoder().decodeInt()
+    override fun decodeLong() = nextDecoder().decodeLong()
+    override fun decodeFloat() = nextDecoder().decodeFloat()
+    override fun decodeDouble() = nextDecoder().decodeDouble()
+    override fun decodeChar() = nextDecoder().decodeChar()
+    override fun decodeString() = nextDecoder().decodeString()
+    override fun decodeEnum(enumDescriptor: SerialDescriptor) = nextDecoder().decodeEnum(enumDescriptor)
+    override fun beginStructure(descriptor: SerialDescriptor) = nextDecoder().beginStructure(descriptor)
+
+    private fun decoder(): KtreeDecoder {
+        val child = root.children[elementIndex]
+        return if (child.typeCell == Symbol.List.value) KtreeDecoder(child.cloneData(Symbol.List.value)) else KtreeDecoder(child)
     }
+
+    private fun nextDecoder() = decoder().also { elementIndex++ }
+
+    override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
+        return root.children.size
+    }
+
+    override fun decodeSequentially(): Boolean = true
 }
 
 @ExperimentalSerializationApi
@@ -318,6 +335,7 @@ class KtreeMapDecoder(val root: Tree.Node, override val serializersModule: Seria
     var elementDecoder: KtreeDecoder? = null
 
     override fun decodeNotNullMark() = nextDecoder().decodeNotNullMark()
+    override fun decodeNull() = nextDecoder().decodeNull()
     override fun decodeBoolean() = nextDecoder().decodeBoolean()
     override fun decodeByte() = nextDecoder().decodeByte()
     override fun decodeShort() = nextDecoder().decodeShort()
